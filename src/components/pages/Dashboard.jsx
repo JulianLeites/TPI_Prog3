@@ -1,5 +1,5 @@
 import React from 'react'
-import NavBar from './NavBar.jsx'
+import NavBar from '../UI/NavBar.jsx'
 import { Container } from 'react-bootstrap'
 
 const Dashboard = () => {
