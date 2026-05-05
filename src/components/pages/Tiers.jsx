@@ -1,4 +1,5 @@
 import { Button, Card } from 'react-bootstrap';
+import NavBar from '../UI/NavBar.jsx';
 function Tiers() {
     const suscriptionTiers = [
         {
@@ -32,9 +33,11 @@ function Tiers() {
     }
 
     return (
+    <>  <NavBar/>
         <div className="d-flex justify-content-center align-items-center gap-3"
             style={{ minHeight: "100vh" }}
         >
+                
             {suscriptionTiers.map((tier) => (
                 <Card className='text-center'
                     style={{ width: '18rem',
@@ -56,6 +59,7 @@ function Tiers() {
                 </Card>
             ))}
         </div>
+    </>
     );
 }
 
