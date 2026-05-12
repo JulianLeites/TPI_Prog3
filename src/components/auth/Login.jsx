@@ -1,10 +1,10 @@
 import React from 'react'
 import { useState, useRef } from 'react'
 import { Row, Col, Form, Button } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 const Login = () => {
 
-
+const navigate = useNavigate()
 const [email, setEmail] = useState("")
 const [password, setPassword] = useState("")
 
@@ -12,6 +12,7 @@ const [password, setPassword] = useState("")
 const handleSubmit = (e) =>{
     e.preventDefault()
     console.log(email, password)
+    navigate('/dashboard')
 }
 
 

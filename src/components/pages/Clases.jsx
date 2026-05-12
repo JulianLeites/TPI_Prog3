@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Container, Row, Col, Card, Button, Badge } from 'react-bootstrap';
+import NavBar from '../UI/NavBar';
 
 
-const Clases = () => {
+const Clases = ({isLoggedIn}) => {
     const formatearFecha = (fechaStr) => {
         // 1. IMPORTANTE: Cambiamos el orden a YYYY-MM-DD para que JS lo entienda
         const [dia, mes, anio] = fechaStr.split('-');
@@ -26,6 +27,7 @@ const Clases = () => {
     ]);
 
   return (
+    <> <NavBar isLoggedIn={isLoggedIn}/>
     <Container className="py-5">
       <h2 className="text-center mb-5">Nuestras Clases</h2>
       <Row>
@@ -57,6 +59,7 @@ const Clases = () => {
         ))}
       </Row>
     </Container>
+  </>
   );
 };
 

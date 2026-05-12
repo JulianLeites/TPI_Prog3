@@ -1,6 +1,6 @@
 import { Button, Card } from 'react-bootstrap';
 import NavBar from '../UI/NavBar.jsx';
-function Tiers() {
+function Tiers({isLoggedIn}) {
     const suscriptionTiers = [
         {
             id: 1,
@@ -33,7 +33,7 @@ function Tiers() {
     }
 
     return (
-    <>  <NavBar/>
+    <>  <NavBar isLoggedIn={isLoggedIn}/>
         <div className="d-flex justify-content-center align-items-center gap-3"
             style={{ minHeight: "100vh" }}
         >

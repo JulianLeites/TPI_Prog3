@@ -1,10 +1,9 @@
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
 import { NavLink } from 'react-router-dom';
 
-const NavBar = () => {
+const NavBar = ({isLoggedIn}) => {
   return (
     <Navbar expand="lg" className="bg-body-secondary">
       <Container>
@@ -13,10 +12,15 @@ const NavBar = () => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <Nav.Link as={NavLink} to='/tiers'>Membresias</Nav.Link>
-            <Nav.Link as={NavLink} to='/'>Clases</Nav.Link>
+            <Nav.Link as={NavLink} to='/clases'>Clases</Nav.Link>
+            <Nav.Link as={NavLink} to='/horarios'> Horarios </Nav.Link>
+            <Nav.Link as={NavLink} to='/contacto'>Contacto</Nav.Link>
           </Nav>
           <Nav>
-            <Nav.Link as={NavLink} to='/'> <h6>Acceder </h6></Nav.Link>
+            {isLoggedIn ? 
+            <Nav.Link as={NavLink} to='/Perfil'> <h6>Perfil </h6></Nav.Link> : 
+            <Nav.Link as={NavLink} to='/'> <h6>Acceder </h6></Nav.Link>}
+            
           </Nav>
         </Navbar.Collapse>
       </Container>
