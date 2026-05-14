@@ -1,5 +1,7 @@
 import { Button, Card } from 'react-bootstrap';
 import NavBar from '../UI/NavBar.jsx';
+import { useState } from 'react';
+import ModalTier from '../UI/modalTier.jsx';
 function Tiers({isLoggedIn}) {
     const suscriptionTiers = [
         {
@@ -28,12 +30,15 @@ function Tiers({isLoggedIn}) {
         }
     ];
 
+    const [showModal, setShowModal] = useState(false);
+    
     const handleSuscript = () => {
-        console.log('Te has suscripto al plan')
+        setShowModal(true)
     }
 
     return (
-    <>  <NavBar isLoggedIn={isLoggedIn}/>
+    <>  
+        <NavBar isLoggedIn={isLoggedIn}/>
         <div className="d-flex justify-content-center align-items-center gap-3"
             style={{ minHeight: "100vh" }}
         >
@@ -59,6 +64,10 @@ function Tiers({isLoggedIn}) {
                 </Card>
             ))}
         </div>
+        <ModalTier
+            show={showModal}
+            onHide={() => setShowModal(false)}
+        />
     </>
     );
 }
