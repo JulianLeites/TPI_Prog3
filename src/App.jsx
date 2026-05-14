@@ -9,15 +9,16 @@ import { useState } from "react"
 
 function App() {
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [user, setUser] = useState({ loggedIn: true, role: 'admin' });
 
   return (
       <Routes>
-        <Route path="/" element={<Login onLogin={setIsLoggedIn}/>}/>
+        {/* Se pasa setUser para que el Login pueda cambiar el estado luego */}
+        <Route path="/" element={<Login onLogin={setUser}/>}/>
         <Route path="/register" element={<Register/>}/>
-        <Route path="/dashboard" element={<Dashboard isLoggedIn={isLoggedIn}/>}/>
-        <Route path="/clases" element={<Clases isLoggedIn={isLoggedIn}/>} />
-        <Route path="/tiers" element={<Tiers isLoggedIn={isLoggedIn}/>} />
+        <Route path="/dashboard" element={<Dashboard isLoggedIn={user.loggedIn}/>}/>
+        <Route path="/clases" element={<Clases user={user}/>} />
+        <Route path="/tiers" element={<Tiers isLoggedIn={user.loggedIn}/>} />
       </Routes>
   )
 }
