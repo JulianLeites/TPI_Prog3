@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Modal, Form } from "react-bootstrap";
+import { Button, Modal, Form, Row, Col, Accordion } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -80,7 +80,7 @@ const schema = z
     }
   });
 
-function ModalTier({ show, onHide }) {
+function ModalTier({ show, onHide, tier }) {
   const {
     register,
     handleSubmit,
@@ -136,100 +136,145 @@ function ModalTier({ show, onHide }) {
       className="modal show"
       style={{ display: "block", position: "initial" }}
     >
-      <Modal show={show} onHide={onHide} centered backdrop="static" keyboard={false}>
+      <Modal
+        show={show}
+        onHide={onHide}
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Confirmar Compra</Modal.Title>
         </Modal.Header>
 
         <Modal.Body>
+          <Accordion className="mb-3">
+            <Accordion.Item eventKey="0">
+              <Accordion.Header>
+                <h5>{tier ? `Suscripción: ${tier.name}` : "Suscripción"}</h5>
+              </Accordion.Header>
+              <Accordion.Body>
+                <p>Cuota: {tier ? tier.quota : "N/A"}</p>
+              </Accordion.Body>
+            </Accordion.Item>
+          </Accordion>
           <form id="purchase" onSubmit={handleSubmit(onSubmit)}>
-            <label className="form-label">Nombre</label>
-            <input
-              {...register("name")}
-              className="form-control mb-2"
-              type="text"
-              placeholder="First Name"
-            />
-            {errors.name && (
-              <p className="text-danger">{errors.name.message}</p>
-            )}
-            <label className="form-label">Apellido</label>
-            <input
-              {...register("surname")}
-              className="form-control mb-2"
-              type="text"
-              placeholder="Last Name"
-            />
-            {errors.surname && (
-              <p className="text-danger">{errors.surname.message}</p>
-            )}
+            <Row>
+              <Col>
+                <label className="form-label">Nombre</label>
+                <input
+                  {...register("name")}
+                  className="form-control mb-2"
+                  type="text"
+                  placeholder="First Name"
+                />
+                {errors.name && (
+                  <p className="text-danger">{errors.name.message}</p>
+                )}
+              </Col>
+              <Col>
+                <label className="form-label">Apellido</label>
+                <input
+                  {...register("surname")}
+                  className="form-control mb-2"
+                  type="text"
+                  placeholder="Last Name"
+                />
+                {errors.surname && (
+                  <p className="text-danger">{errors.surname.message}</p>
+                )}
+              </Col>
+            </Row>
 
-            <label className="form-label">Tipo de Documento</label>
-            <select {...register("documentType")} className="form-control mb-2">
-              <option value="">Seleccionar</option>
-              <option value="DNI">DNI</option>
-              <option value="Pasaporte">Pasaporte</option>
-              <option value="Licencia">Licencia de Conducir</option>
-            </select>
-            {errors.documentType && (
-              <p className="text-danger">{errors.documentType.message}</p>
-            )}
+            <Row>
+              <Col>
+                <label className="form-label">Tipo de Documento</label>
+                <select
+                  {...register("documentType")}
+                  className="form-control mb-2"
+                >
+                  <option value="">Seleccionar</option>
+                  <option value="DNI">DNI</option>
+                  <option value="Pasaporte">Pasaporte</option>
+                  <option value="Licencia">Licencia de Conducir</option>
+                </select>
+                {errors.documentType && (
+                  <p className="text-danger">{errors.documentType.message}</p>
+                )}
+              </Col>
 
-            <label className="form-label">Número de Documento</label>
-            <input
-              {...register("documentNumber")}
-              className="form-control mb-2"
-              type="text"
-              placeholder={placeholder}
-              disabled={!documentType}
-            />
-            {help && <small className="text-muted d-block mb-2">{help}</small>}
-            {errors.documentNumber && (
-              <p className="text-danger">{errors.documentNumber.message}</p>
-            )}
+              <Col>
+                <label className="form-label">Número de Documento</label>
+                <input
+                  {...register("documentNumber")}
+                  className="form-control mb-2"
+                  type="text"
+                  placeholder={placeholder}
+                  disabled={!documentType}
+                />
+                {help && (
+                  <small className="text-muted d-block mb-2">{help}</small>
+                )}
+                {errors.documentNumber && (
+                  <p className="text-danger">{errors.documentNumber.message}</p>
+                )}
+              </Col>
+            </Row>
 
-            <label className="form-label">Número de Tarjeta</label>
-            <input
-              {...register("cardNumber")}
-              className="form-control mb-2"
-              type="text"
-              placeholder="Número de Tarjeta"
-            />
-            {errors.cardNumber && (
-              <p className="text-danger">{errors.cardNumber.message}</p>
-            )}
+            <Row>
+              <Col>
+                <label className="form-label">Número de Tarjeta</label>
+                <input
+                  {...register("cardNumber")}
+                  className="form-control mb-2"
+                  type="text"
+                  placeholder="Número de Tarjeta"
+                />
+                {errors.cardNumber && (
+                  <p className="text-danger">{errors.cardNumber.message}</p>
+                )}
+              </Col>
+            </Row>
 
-            <label className="form-label">Fecha de Vencimiento</label>
-            <input
-              {...register("expiryDate", {
-                onChange: (e) => {
-                  const value = e.target.value;
-                  if (value.length === 2 && !value.includes("/")) {
-                    e.target.value = value + "/";
-                  }
-                },
-              })}
-              className="form-control mb-2"
-              type="text"
-              placeholder="MM/YY"
-            />
-            {errors.expiryDate && (
-              <p className="text-danger">{errors.expiryDate.message}</p>
-            )}
+            <Row>
+              <Col>
+                <label className="form-label">Fecha de Vencimiento</label>
+                <input
+                  {...register("expiryDate", {
+                    onChange: (e) => {
+                      const value = e.target.value;
+                      if (value.length === 2 && !value.includes("/")) {
+                        e.target.value = value + "/";
+                      }
+                    },
+                  })}
+                  className="form-control mb-2"
+                  type="text"
+                  placeholder="MM/YY"
+                />
+                {errors.expiryDate && (
+                  <p className="text-danger">{errors.expiryDate.message}</p>
+                )}
+              </Col>
+              <Col>
+                <label className="form-label">CVV</label>
+                <input
+                  {...register("cvv")}
+                  className="form-control mb-2"
+                  type="text"
+                  placeholder="CVV"
+                />
+                {errors.cvv && (
+                  <p className="text-danger">{errors.cvv.message}</p>
+                )}
 
-            <label className="form-label">CVV</label>
-            <input
-              {...register("cvv")}
-              className="form-control mb-2"
-              type="text"
-              placeholder="CVV"
-            />
-            {errors.cvv && <p className="text-danger">{errors.cvv.message}</p>}
-
-            {errors.root && (
-              <p className="text-danger">{errors.root.message}</p>
-            )}
+                {errors.root && (
+                  <p className="text-danger">{errors.root.message}</p>
+                )}
+              </Col>
+            </Row>
           </form>
+          <p className="text-center">Total a pagar: {tier ? `$${tier.price}` : "N/A"}</p>
         </Modal.Body>
 
         <Modal.Footer>
