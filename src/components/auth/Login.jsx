@@ -28,6 +28,7 @@ const Login = ({ onLogin }) => {
   });
 
   const navigate = useNavigate();
+/*
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState(false);
@@ -36,31 +37,31 @@ const Login = ({ onLogin }) => {
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
 
-  //   const handleSubmit = (e) => {
-  //     e.preventDefault();
-  //     if (validation()) {
-  //       console.log(email, password);
-  //       navigate("/dashboard");
-  //       onLogin(true);
-  //     }
-  //   };
+  const handleSubmit = (e) => {
+      e.preventDefault();
+      if (validation()) {
+        console.log(email, password);
+        navigate("/dashboard");
+        onLogin(true);
+      }
+  };
 
-//   const validation = () => {
-//     let isValid = true;
-//     if (password == "") {
-//       passwordRef.current.focus();
-//       setPasswordError(true);
-//       isValid = false;
-//     }
-//     if (email == "") {
-//       emailRef.current.focus();
-//       setEmailError(true);
-//       isValid = false;
-//     }
+  const validation = () => {
+    let isValid = true;
+    if (password == "") {
+      passwordRef.current.focus();
+      setPasswordError(true);
+      isValid = false;
+    }
+    if (email == "") {
+      emailRef.current.focus();
+      setEmailError(true);
+      isValid = false;
+    }
 
-//     return isValid;
-//   };
-
+    return isValid;
+  };
+  */
   const onSubmit = (data) => {
     console.log(data);
     navigate("/dashboard");
@@ -69,43 +70,55 @@ const Login = ({ onLogin }) => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit(onSubmit)} id="signIn">
-        <Link className="text-end" to={"/register"}>
-          {" "}
-          Registrarse{" "}
+      <Form onSubmit={handleSubmit(onSubmit)} className="p-5 m-5 bg-secondary">
+
+        <Link className="d-block text-end mb-1" to="/register">
+          Registrarse
         </Link>
-        <label className="form-label">Email</label>
-        <input
+
+        <Form.Group className="mb-3">
+          <Form.Label>Email</Form.Label>
+
+          <Form.Control
+            placeholder="Ingrese email"
             {...register("email")}
-            className="form-control mb-2"
-            type="email"
-            placeholder="ingrese email"
-        />
-        {errors.email && (
-            <p className="text-danger">{errors.email.message}</p>
-        )}
+          />
 
-        <label className="form-label">Contraseña</label>
-        <input
-          {...register("password")}
-          className="form-control mb-2"
-          type="password"
-          placeholder="Contraseña"
-        />
-        {errors.password && (
-            <p className="text-danger">{errors.password.message}</p>
-        )}
+          {errors.email && (
+            <p className="text-danger mt-1">
+              {errors.email.message}
+            </p>
+          )}
+        </Form.Group>
 
-        <input
-          className="form-check-input"
-          type="checkbox"
-          id="rememberMe"
-          name="rememberMe"
-        />
-        <label className="form-check-label" htmlFor="rememberMe">
-          Mantener sesión
-        </label>
-      </form>
+        <Form.Group className="mb-3">
+          <Form.Label>Contraseña</Form.Label>
+
+          <Form.Control
+            type="password"
+            placeholder="Contraseña"
+            {...register("password")}
+          />
+
+          {errors.password && (
+            <p className="text-danger mt-1">
+              {errors.password.message}
+            </p>
+          )}
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Check
+            type="checkbox"
+            label="Mantener sesión"
+          />
+        </Form.Group>
+
+        <Button variant="primary" type="submit">
+          Iniciar sesión
+        </Button>
+
+      </Form>
       {/* <Form.Group className="mb-3" controlId="formBasicEmail">
           <Form.Label>Email</Form.Label>
           <Form.Control
@@ -142,13 +155,6 @@ const Login = ({ onLogin }) => {
           <Form.Check type="checkbox" label="Mantener sesión" />
         </Form.Group> */}
 
-      <Button
-        variant="primary"
-        type="submit"
-        form="signIn"
-      >
-        Iniciar sesión
-      </Button>
     </div>
   );
 };
