@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Container, Row, Col, Card, Button, Badge, Modal } from 'react-bootstrap';
 import NavBar from '../UI/NavBar';
 import ModalClase from '../UI/ModalClase'; // Importamos el modal aparte
+import Footer from '../UI/Footer';
 
 const Clases = ({ user }) => {
     const [clases, setClases] = useState([
@@ -154,6 +155,7 @@ const Clases = ({ user }) => {
                     </Button>
                 </Modal.Footer>
             </Modal>
+            <Footer />
         </>
     );
 };
