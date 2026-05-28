@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { Container, Row, Col, Card, Button, Badge, Modal } from 'react-bootstrap';
 import NavBar from '../UI/NavBar';
