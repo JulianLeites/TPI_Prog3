@@ -112,7 +112,7 @@ const Clases = ({ user }) => {
                                                     size="sm" 
                                                     onClick={() => handleOpenDelete(clase.id)}
                                                 >
-                                                    Borrar
+                                                    Eliminar
                                                 </Button>
                                             </div>
                                         ) : (
@@ -143,14 +143,14 @@ const Clases = ({ user }) => {
                     <Modal.Title className="fs-5">¿Eliminar Clase?</Modal.Title>
                 </Modal.Header>
                 <Modal.Body className="text-center py-4">
-                    <p className="mb-0 fw-semibold">¿Estás seguro de que querés borrar esta actividad de la grilla?</p>
+                    <p className="mb-0 fw-semibold">¿Estás seguro de eliminar esta actividad de la grilla?</p>
                 </Modal.Body>
                 <Modal.Footer className="d-flex justify-content-center gap-2">
                     <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
                         Cancelar
                     </Button>
                     <Button variant="danger" onClick={handleConfirmDelete}>
-                        Sí, Borrar
+                        Eliminar
                     </Button>
                 </Modal.Footer>
             </Modal>
