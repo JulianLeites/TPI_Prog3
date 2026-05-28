@@ -5,6 +5,7 @@ import Dashboard from "./components/pages/Dashboard.jsx"
 import Clases from "./components/pages/Clases.jsx"
 import Tiers from "./Components/pages/Tiers.jsx"
 import { useState } from "react"
+import Contacto from "./components/pages/Contacto.jsx"
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard isLoggedIn={user.loggedIn}/>}/>
         <Route path="/clases" element={<Clases user={user}/>} />
         <Route path="/tiers" element={<Tiers isLoggedIn={user.loggedIn}/>} />
+        <Route path="/contacto" element={<Contacto isLoggedIn={user.loggedIn}/>} />
       </Routes>
   )
 }
