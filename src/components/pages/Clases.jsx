@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Container, Row, Col, Card, Button, Badge, Modal, Form } from 'react-bootstrap';
 import NavBar from '../UI/NavBar';
+import Footer from '../UI/Footer';
 
 const Clases = ({ user }) => {
     const [clases, setClases] = useState([
@@ -182,10 +183,11 @@ const Clases = ({ user }) => {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShow(false)}>Cancelar</Button>
+                    <Button variant="danger" onClick={() => setShow(false)}>Cancelar</Button>
                     <Button variant="primary" onClick={handleSave}>Guardar Clase</Button>
                 </Modal.Footer>
             </Modal>
+            <Footer />
         </>
     );
 };

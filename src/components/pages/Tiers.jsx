@@ -1,6 +1,8 @@
 import { Button, Card } from "react-bootstrap";
 import { useState } from "react";
 import ModalTier from "../UI/modalTier";
+import Footer from "../UI/Footer";
+import NavBar from "../UI/NavBar";
 
 function Tiers() {
   const suscriptionTiers = [
@@ -43,9 +45,11 @@ function Tiers() {
 
   return (
     <>
+      <NavBar />
+      <h1 className="text-center mt-4">Elige tu plan de suscripción</h1>
       <div
         className="d-flex justify-content-center align-items-center gap-3"
-        style={{ minHeight: "100vh" }}
+        style={{ minHeight: "70vh"}}
       >
         {suscriptionTiers.map((tier) => (
           <Card
@@ -57,7 +61,7 @@ function Tiers() {
             }}
             key={tier.id}
           >
-            <Card.Img variant="top" src={tier.imageUrl} />
+            <Card.Img variant="top" src={tier.imageUrl} style={{maxHeight: "38vh"}} />
             <Card.Body>
               <Card.Title>{tier.name}</Card.Title>
               <Card.Text>{tier.price}</Card.Text>
@@ -74,6 +78,7 @@ function Tiers() {
         onHide={() => setShowModal(false)}
         tier={selectedTier}
       />
+      <Footer />
     </>
   );
 }
