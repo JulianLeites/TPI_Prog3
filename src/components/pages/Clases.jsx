@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Modal, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Badge, Modal } from 'react-bootstrap';
 import NavBar from '../UI/NavBar';
+import ModalClase from '../UI/ModalClase'; // Importamos el modal aparte
 import Footer from '../UI/Footer';
 
 const Clases = ({ user }) => {
@@ -10,14 +11,18 @@ const Clases = ({ user }) => {
         { id: 3, nombre: "Pilates", profesor: "Julieta", fecha: "2026-05-08", horario: "16:00", cupos: 8 },
     ]);
 
-    const [show, setShow] = useState(false);
+    // Estados para el Modal de Formulario (Alta/Modificación)
+    const [showFormModal, setShowFormModal] = useState(false);
     const [claseEdicion, setClaseEdicion] = useState({ 
         nombre: '', profesor: '', fecha: '', horario: '', cupos: 0 
     });
 
+    // Estados para el Modal de Confirmación de Borrado (Baja)
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [idClaseAEliminar, setIdClaseAEliminar] = useState(null);
+
     const isAdmin = user.role === 'admin';
 
-    // Formateo fecha para mostrarla en dia y numero
     const formatearFecha = (fechaStr) => {
         if (!fechaStr) return "";
         const fecha = new Date(fechaStr);
@@ -28,16 +33,15 @@ const Clases = ({ user }) => {
         }).format(fecha);
     };
 
-    const handleShow = (clase = { nombre: '', profesor: '', fecha: '', horario: '', cupos: 0 }) => {
+    // Funciones para Alta y Modificación
+    const handleOpenForm = (clase = { nombre: '', profesor: '', fecha: '', horario: '', cupos: 0  }) => {
         setClaseEdicion(clase);
-        setShow(true);
+        setShowFormModal(true);
     };
 
-    // Validar campos
     const handleSave = () => {
         const { nombre, profesor, fecha, horario, cupos } = claseEdicion;
         
-        // Verificamos que nada esté vacío
         if (!nombre || !profesor || !fecha || !horario || cupos === "") {
             alert("Por favor, completa todos los campos antes de guardar.");
             return;
@@ -48,14 +52,19 @@ const Clases = ({ user }) => {
         } else {
             setClases([...clases, { ...claseEdicion, id: Date.now() }]);
         }
-        setShow(false);
+        setShowFormModal(false);
     };
 
-    // Alerta al intentar eliminar la clase
-    const eliminarClase = (id) => {
-        if (window.confirm("¿Estás seguro de eliminar esta clase?")) {
-            setClases(clases.filter(c => c.id !== id));
-        }
+    // Funciones para la Baja Estética
+    const handleOpenDelete = (id) => {
+        setIdClaseAEliminar(id);
+        setShowDeleteModal(true);
+    };
+
+    const handleConfirmDelete = () => {
+        setClases(clases.filter(c => c.id !== idClaseAEliminar));
+        setShowDeleteModal(false);
+        setIdClaseAEliminar(null);
     };
 
     return (
@@ -65,8 +74,8 @@ const Clases = ({ user }) => {
                 <div className="d-flex justify-content-between align-items-center mb-5">
                     <h2>Lista de Clases</h2>
                     {isAdmin && (
-                        <Button variant="success" onClick={() => handleShow()}>
-                            Crear clase
+                        <Button variant="success" onClick={() => handleOpenForm()}>
+                            + Crear clase
                         </Button>
                     )}
                 </div>
@@ -95,21 +104,18 @@ const Clases = ({ user }) => {
                                                     variant="outline-secondary" 
                                                     size="sm" 
                                                     className="flex-grow-1" 
-                                                    onClick={() => handleShow(clase)}
+                                                    onClick={() => handleOpenForm(clase)}
                                                 >
                                                     Editar
                                                 </Button>
-
                                                 <Button 
                                                     variant="danger" 
                                                     size="sm" 
-                                                    onClick={() => eliminarClase(clase.id)}
+                                                    onClick={() => handleOpenDelete(clase.id)}
                                                 >
-                                                    Borrar
+                                                    Eliminar
                                                 </Button>
-
                                             </div>
-
                                         ) : (
                                             <Button variant="primary" className="w-100" disabled={clase.cupos === 0}>
                                                 Inscribirme
@@ -123,68 +129,30 @@ const Clases = ({ user }) => {
                 </Row>
             </Container>
 
-            <Modal show={show} onHide={() => setShow(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>{claseEdicion.id ? 'Editar Clase' : 'Crear Nueva Clase'}</Modal.Title>
+            
+            <ModalClase 
+                show={showFormModal}
+                onHide={() => setShowFormModal(false)}
+                claseEdicion={claseEdicion}
+                setClaseEdicion={setClaseEdicion}
+                onSave={handleSave}
+            />
+
+           
+            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered size="sm">
+                <Modal.Header closeButton className="bg-danger text-white">
+                    <Modal.Title className="fs-5">¿Eliminar Clase?</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Nombre </Form.Label>
-                            <Form.Control 
-                                type="text" 
-                                value={claseEdicion.nombre} 
-                                onChange={(e) => setClaseEdicion({...claseEdicion, nombre: e.target.value})} 
-                                required
-                            />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Profesor</Form.Label>
-                            <Form.Control 
-                                type="text" 
-                                value={claseEdicion.profesor} 
-                                onChange={(e) => setClaseEdicion({...claseEdicion, profesor: e.target.value})} 
-                                required
-                            />
-                        </Form.Group>
-                        <Row>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Fecha</Form.Label>
-                                    <Form.Control 
-                                        type="date" 
-                                        value={claseEdicion.fecha} 
-                                        onChange={(e) => setClaseEdicion({...claseEdicion, fecha: e.target.value})} 
-                                        required
-                                    />
-                                </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Horario</Form.Label>
-                                    <Form.Control 
-                                        type="time" 
-                                        value={claseEdicion.horario} 
-                                        onChange={(e) => setClaseEdicion({...claseEdicion, horario: e.target.value})} 
-                                        required
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Cupo</Form.Label>
-                            <Form.Control 
-                                type="number" 
-                                value={claseEdicion.cupos} 
-                                onChange={(e) => setClaseEdicion({...claseEdicion, cupos: e.target.value === "" ? "" : parseInt(e.target.value)})} 
-                                required
-                            />
-                        </Form.Group>
-                    </Form>
+                <Modal.Body className="text-center py-4">
+                    <p className="mb-0 fw-semibold">¿Estás seguro de eliminar esta actividad de la grilla?</p>
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="danger" onClick={() => setShow(false)}>Cancelar</Button>
-                    <Button variant="primary" onClick={handleSave}>Guardar Clase</Button>
+                <Modal.Footer className="d-flex justify-content-center gap-2">
+                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                        Cancelar
+                    </Button>
+                    <Button variant="danger" onClick={handleConfirmDelete}>
+                        Eliminar
+                    </Button>
                 </Modal.Footer>
             </Modal>
             <Footer />
