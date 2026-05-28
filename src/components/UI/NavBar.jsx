@@ -18,7 +18,7 @@ const NavBar = ({isLoggedIn}) => {
           </Nav>
           <Nav>
             {isLoggedIn ? 
-            <Nav.Link as={NavLink} to='/Perfil'> <h6>Perfil </h6></Nav.Link> : 
+            <Nav.Link as={NavLink} to='/profile'> <h6>Perfil </h6></Nav.Link> : 
             <Nav.Link as={NavLink} to='/'> <h6>Acceder </h6></Nav.Link>}
             
           </Nav>
