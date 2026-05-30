@@ -1,0 +1,76 @@
+.accordion-button:not(.collapsed) {
+    background-color: transparent !important;
+    color: inherit !important;
+    box-shadow: none !important;
+}
+
+.accordion-button:focus {
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.drop-down-toggle-no-caret {
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.25rem 0.5rem;
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+.drop-down-toggle-no-caret::after {
+  display: none !important;
+}
+
+.drop-down-toggle-no-caret:hover,
+.drop-down-toggle-no-caret:focus,
+.drop-down-toggle-no-caret:active,
+.drop-down-toggle-no-caret:focus:hover {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+.user-management-accordion{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.accordeon-list {
+    border-color: black;
+}
+
+.user-list-header {
+    text-align: center;
+    min-width: 400px;
+    max-width: 600px;
+    align-self: center;
+}
+
+.user-list {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.user-list-item{
+    min-width: 400px;
+    display: flex;;
+    justify-content: space-between;
+    border-Color: black;
+    border-left: none;
+    border-right: none;
+    background-color: #DEDEDE;
+}
+
+.user-list-item:first-child {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+.user-list-item:last-child {
+    border-bottom: none;
+}
