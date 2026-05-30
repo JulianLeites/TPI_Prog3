@@ -1,6 +1,9 @@
 import express from 'express';
 import { sequelize } from './db.js';
 import { PORT } from './config.js';
+import userRoutes from './routes/users.routes.js';
+import classRoutes from './routes/classes.routes.js';
+import membershipRoutes from './routes/membership.routes.js';
 
 import './models/Associations.js';
 import { User } from './models/users.js';
@@ -12,8 +15,12 @@ import { User_Membership } from './models/User_Membership.js';
 const app = express();
 
 try {
+    app.get('/', (req, res) => {
+        res.send('Welcome to the Gym Management System API');
+    });
     app.listen(PORT);
-    //app.use(bookRoutes);
+    app.use(express.json());
+    app.use(userRoutes, classRoutes, membershipRoutes);
 
     await sequelize.sync();
 
