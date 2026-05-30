@@ -15,6 +15,8 @@ const NavBar = ({isLoggedIn}) => {
             <Nav.Link as={NavLink} to='/clases'>Clases</Nav.Link>
             <Nav.Link as={NavLink} to='/horarios'> Horarios </Nav.Link>
             <Nav.Link as={NavLink} to='/contacto'>Contacto</Nav.Link>
+            {/* Se debe modificar para que solo el superAdmin pueda acceder a Administrar Usuarios */}
+            <Nav.Link as={NavLink} to='/user-management'>Administrar Usuarios</Nav.Link>
           </Nav>
           <Nav>
             {isLoggedIn ? 
