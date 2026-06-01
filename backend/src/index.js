@@ -4,6 +4,7 @@ import { PORT } from './config.js';
 import userRoutes from './routes/users.routes.js';
 import classRoutes from './routes/classes.routes.js';
 import membershipRoutes from './routes/membership.routes.js';
+import userMembershipRoutes from './routes/userMembership.routes.js';
 
 import './models/Associations.js';
 import { User } from './models/users.js';
@@ -20,7 +21,10 @@ try {
     });
     app.use(express.json());
     app.listen(PORT);
-    app.use(userRoutes, classRoutes, membershipRoutes);
+    app.use(userRoutes);
+    app.use(membershipRoutes);
+    app.use(classRoutes);
+    app.use(userMembershipRoutes);
 
     await sequelize.sync();
 
