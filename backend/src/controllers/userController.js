@@ -26,6 +26,31 @@ export const getUserById = async (req, res) => {
 export const createUser = async (req, res) => {
     const { name, username, password, email } = req.body;
     try {
+        if (!name || !username || !password || !email) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        if (name.length < 3) {
+            return res.status(400).json({ error: 'Name must be at least 3 characters long' });
+        }
+
+        if (username.length < 4) {
+            return res.status(400).json({ error: 'Username must be at least 4 characters long' });
+        }
+
+        if (password.length < 8) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+        }
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+
+        const existingUser = await User.findOne({ where: { username } });
+
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username already exists' });
+        }
+
         const newUser = await User.create({
             name,
             username,
@@ -43,6 +68,28 @@ export const updateUser = async (req, res) => {
     const { name, username, password, email } = req.body;
     try {
         const user = await User.findByPk(id);
+
+        if (name && name.length < 3) {
+            return res.status(400).json({ error: 'Name must be at least 3 characters long' });
+        }
+
+        if (username && username.length < 4) {
+            return res.status(400).json({ error: 'Username must be at least 4 characters long' });
+        }
+
+        const existingUser = await User.findOne({ where: { username } });
+        if (existingUser && existingUser.id !== parseInt(id)) {
+            return res.status(400).json({ error: 'Username already exists' });
+        }
+
+        if (password && password.length < 8) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+        }
+
+        if (email && !/\S+@\S+\.\S+/.test(email)) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+
         if (user) {
             user.name = name || user.name;
             user.username = username || user.username;

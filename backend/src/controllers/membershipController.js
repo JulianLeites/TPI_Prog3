@@ -25,6 +25,20 @@ export const getMembershipById = async (req, res) => {
 
 export const createMembership = async (req, res) => {
     const { name, price, duration } = req.body;
+
+    if (!name || !price) {
+        return res.status(400).json({ error: 'Name and price are required' });
+    }
+    if (name.length < 3) {
+        return res.status(400).json({ error: 'Name must be at least 3 characters long' });
+    }
+    if (price <= 0) {
+        return res.status(400).json({ error: 'Price must be a positive number' });
+    }
+    if (duration && duration <= 0) {
+        return res.status(400).json({ error: 'Duration must be a positive number' });
+    }
+
     try {
         const newMembership = await Membership.create({
             name,
@@ -40,6 +54,17 @@ export const createMembership = async (req, res) => {
 export const updateMembership = async (req, res) => {
     const { id } = req.params;
     const { name, price, duration } = req.body;
+
+    if (name && name.length < 3) {
+        return res.status(400).json({ error: 'Name must be at least 3 characters long' });
+    }
+    if (price && price <= 0) {
+        return res.status(400).json({ error: 'Price must be a positive number' });
+    }
+    if (duration && duration <= 0) {
+        return res.status(400).json({ error: 'Duration must be a positive number' });
+    }
+
     try {
         const membership = await Membership.findByPk(id);
         if (membership) {
