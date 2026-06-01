@@ -1,28 +1,17 @@
 import { Router } from 'express';
-
+import {
+    getAllMemberships,
+    getMembershipById,
+    createMembership,
+    updateMembership,
+    deleteMembership
+} from '../controllers/membershipController.js';
 const router = Router();
 
-router.get('/memberships', (req, res) => {
-    res.send('Memberships route working!');
-});
-
-router.get('/memberships/:id', (req, res) => {
-    const membershipId = req.params.id;
-    res.send(`Membership ID: ${membershipId}`);
-});
-
-router.post('/memberships', (req, res) => {
-    res.send('Create a new membership');
-});
-
-router.put('/memberships/:id', (req, res) => {
-    const membershipId = req.params.id;
-    res.send(`Update membership with ID: ${membershipId}`);
-});
-
-router.delete('/memberships/:id', (req, res) => {
-    const membershipId = req.params.id;
-    res.send(`Delete membership with ID: ${membershipId}`);
-});
+router.get('/memberships', getAllMemberships);
+router.get('/memberships/:id', getMembershipById);
+router.post('/memberships', createMembership);
+router.put('/memberships/:id', updateMembership);
+router.delete('/memberships/:id', deleteMembership);
 
 export default router;

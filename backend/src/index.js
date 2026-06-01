@@ -18,8 +18,8 @@ try {
     app.get('/', (req, res) => {
         res.send('Welcome to the Gym Management System API');
     });
-    app.listen(PORT);
     app.use(express.json());
+    app.listen(PORT);
     app.use(userRoutes, classRoutes, membershipRoutes);
 
     await sequelize.sync();
