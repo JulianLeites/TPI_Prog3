@@ -1,9 +1,3 @@
-// User_membership
-// Id
-// User_id
-// Membership_id
-// Date_start
-// Date_end
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../db.js';
 
