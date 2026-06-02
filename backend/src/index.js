@@ -5,6 +5,7 @@ import userRoutes from './routes/users.routes.js';
 import classRoutes from './routes/classes.routes.js';
 import membershipRoutes from './routes/membership.routes.js';
 import userMembershipRoutes from './routes/userMembership.routes.js';
+import './jobs/membershipExpiration.js';
 
 import './models/Associations.js';
 import { User } from './models/users.js';

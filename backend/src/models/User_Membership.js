@@ -23,6 +23,16 @@ export const User_Membership = sequelize.define('User_Membership', {
             key: 'id'
         }
     },
+    automatic_renewal: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+    },
+    active: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+    },
     date_start: {
         type: DataTypes.DATE,
         allowNull: false,
