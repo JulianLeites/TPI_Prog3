@@ -22,7 +22,11 @@ export const Class = sequelize.define('Class', {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    schedule: {
+    day: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    hour: {
         type: DataTypes.STRING,
         allowNull: false
     },

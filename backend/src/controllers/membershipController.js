@@ -24,7 +24,7 @@ export const getMembershipById = async (req, res) => {
 };
 
 export const createMembership = async (req, res) => {
-    const { name, price, duration } = req.body;
+    const { name, price, duration, max_classes } = req.body;
 
     if (!name || !price) {
         return res.status(400).json({ error: 'Name and price are required' });
@@ -38,12 +38,16 @@ export const createMembership = async (req, res) => {
     if (duration && duration <= 0) {
         return res.status(400).json({ error: 'Duration must be a positive number' });
     }
+    if (max_classes && max_classes <= 0) {
+        return res.status(400).json({ error: 'Max classes must be a positive number' });
+    }
 
     try {
         const newMembership = await Membership.create({
             name,
             price,
-            duration_days: duration
+            duration_days: duration,
+            max_classes: max_classes
         });
         res.status(201).json(newMembership);
     } catch (error) {
@@ -53,7 +57,7 @@ export const createMembership = async (req, res) => {
 
 export const updateMembership = async (req, res) => {
     const { id } = req.params;
-    const { name, price, duration } = req.body;
+    const { name, price, duration, max_classes } = req.body;
 
     if (name && name.length < 3) {
         return res.status(400).json({ error: 'Name must be at least 3 characters long' });
@@ -64,6 +68,9 @@ export const updateMembership = async (req, res) => {
     if (duration && duration <= 0) {
         return res.status(400).json({ error: 'Duration must be a positive number' });
     }
+    if (max_classes && max_classes <= 0) {
+        return res.status(400).json({ error: 'Max classes must be a positive number' });
+    }
 
     try {
         const membership = await Membership.findByPk(id);
@@ -71,6 +78,7 @@ export const updateMembership = async (req, res) => {
             membership.name = name || membership.name;
             membership.price = price || membership.price;
             membership.duration_days = duration || membership.duration_days;
+            membership.max_classes = max_classes || membership.max_classes;
             await membership.save();
             res.json(membership);
         } else {
