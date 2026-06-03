@@ -161,7 +161,7 @@ const UserManagement = () => {
 
   return (
     <div>
-        <NavBar />
+        <NavBar isLoggedIn={user.loggedIn}/>
         <h1 className='text-center mt-4'>Gestión de Usuarios</h1>
         <div className='text-center' style={{ minHeight: "70vh"}}>
                 <Button 

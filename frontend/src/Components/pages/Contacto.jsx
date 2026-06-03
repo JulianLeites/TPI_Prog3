@@ -14,7 +14,7 @@ const schema = z.object({
     email: z.string().email("Email inválido"),
     mensaje: z.string().min(10, "El mensaje es muy corto") 
 })
-const Contacto = () => {
+const Contacto = ({user}) => {
     const navigate = useNavigate()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const {
@@ -39,7 +39,7 @@ const Contacto = () => {
     }
     return (
     <>
-    <NavBar/>
+    <NavBar isLoggedIn={user.loggedIn}/>
     <div>
         
         <div className='mx-5'>

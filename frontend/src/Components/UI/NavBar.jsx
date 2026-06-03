@@ -5,7 +5,7 @@ import { NavLink } from 'react-router-dom';
 
 const NavBar = ({isLoggedIn}) => {
   return (
-    <Navbar expand="lg" className="bg-body-secondary">
+    <Navbar expand="lg" bg='warning'>
       <Container>
         <Navbar.Brand as={NavLink} to='/dashboard'>Inicio</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -13,7 +13,6 @@ const NavBar = ({isLoggedIn}) => {
           <Nav className="me-auto">
             <Nav.Link as={NavLink} to='/tiers'>Membresias</Nav.Link>
             <Nav.Link as={NavLink} to='/clases'>Clases</Nav.Link>
-            <Nav.Link as={NavLink} to='/horarios'> Horarios </Nav.Link>
             <Nav.Link as={NavLink} to='/contacto'>Contacto</Nav.Link>
             {/* Se debe modificar para que solo el superAdmin pueda acceder a Administrar Usuarios */}
             <Nav.Link as={NavLink} to='/user-management'>Administrar Usuarios</Nav.Link>
