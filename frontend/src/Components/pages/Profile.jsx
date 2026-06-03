@@ -4,10 +4,10 @@ import NavBar from '../UI/NavBar'
 import Footer from '../UI/Footer'
 import { FaRegUserCircle } from "react-icons/fa";
 
-const Profile = () => {
+const Profile = ({user}) => {
   return (
     <div>
-      <NavBar />
+      <NavBar isLoggedIn={user.loggedIn}/>
         <Container className='mt-5' style={{ minHeight: "70vh"}}>
             <Row className='justify-content-center g-5 align-items-start'>
                 <Col md="auto" className='d-flex flex-column align-items-center'>

@@ -4,12 +4,12 @@ import Footer from '../UI/Footer.jsx';
 import { Container, Row, Col, Button, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
-const Dashboard = ({ isLoggedIn }) => {
+const Dashboard = ({ user }) => {
   const navigate = useNavigate();
 
   return (
     <div className="bg-light d-flex flex-column" style={{ minHeight: "100vh" }}>
-      <NavBar isLoggedIn={isLoggedIn} />
+      <NavBar isLoggedIn={user.loggedIn} />
 
       <div className="flex-grow-1">
         <div 
