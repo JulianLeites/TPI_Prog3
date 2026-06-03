@@ -10,6 +10,7 @@ export const User_Membership = sequelize.define('User_Membership', {
     user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        unique: false,
         references: {
             model: 'users',
             key: 'id'
@@ -18,6 +19,7 @@ export const User_Membership = sequelize.define('User_Membership', {
     membership_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        unique: false,
         references: {
             model: 'memberships',
             key: 'id'
@@ -44,5 +46,6 @@ export const User_Membership = sequelize.define('User_Membership', {
     }
 }, {
     timestamps: false,
-    tableName: 'User_Membership'
+    tableName: 'User_Membership',
+    indexes: []
 });

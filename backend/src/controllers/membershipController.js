@@ -67,7 +67,7 @@ export const updateMembership = async (req, res) => {
     }
     if (duration && duration <= 0) {
         return res.status(400).json({ error: 'Duration must be a positive number' });
-    }
+    }   
     if (max_classes && max_classes <= 0) {
         return res.status(400).json({ error: 'Max classes must be a positive number' });
     }

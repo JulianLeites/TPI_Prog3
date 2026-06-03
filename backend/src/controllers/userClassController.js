@@ -2,6 +2,7 @@ import { User_Class } from '../models/User_Class.js';
 import { User_Membership } from '../models/User_Membership.js';
 import { User } from '../models/users.js';
 import { Class } from '../models/Classes.js';
+import { Membership } from '../models/membership.js';
 
 export const assignUserToClass = async (req, res) => {
     const { user_id, class_id } = req.params;
@@ -19,13 +20,15 @@ export const assignUserToClass = async (req, res) => {
             return res.status(400).json({ message: 'User is already assigned to this class' });
         }
 
-        const activeMembership = await User_Membership.findOne({ where: { user_id: userId, active: true } });
+        const activeMembership = await User_Membership.findOne({ where: { user_id: userId, active: true }, include: Membership });
         if (!activeMembership) {
             return res.status(400).json({ message: 'User must have an active membership to be assigned to a class' });
         }
 
-        if (activeMembership.max_classes <= await User_Class.count({ where: { user_id: userId } })) {
-            return res.status(400).json({ message: 'User has reached the maximum number of classes allowed' });
+        const maxClasses = activeMembership.Membership.max_classes;
+        const currentClassCount = await User_Class.count({ where: { user_id: userId } });
+        if (currentClassCount >= maxClasses) {
+            return res.status(400).json({ message: `User has reached the maximum number of classes allowed by their membership (${maxClasses})` });
         }
 
         if (gymClass.capacity <= await User_Class.count({ where: { class_id: classId } })) {

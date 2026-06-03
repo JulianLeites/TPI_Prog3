@@ -4,26 +4,9 @@ import { User_Class } from '../models/User_Class.js';
 import { Op } from 'sequelize';
 import { adjustUserClasses } from '../services/adjustUserClasses.js';
 
-cron.schedule('0 */6 * * *', async() => {
+cron.schedule('0 1 * * *', async() => {
     try {
         const now = new Date();
-
-        const startNewMemberships = await User_Membership.findAll({
-            where: {
-                date_start: {
-                    [Op.lte]: now
-                },
-                date_end: {
-                    [Op.gt]: now
-                },
-                active: false
-            }
-        });
-        for (const membership of startNewMemberships) {
-            membership.active = true;
-            console.log(`Membership with ID ${membership.id} has started.`);
-            await membership.save();
-        }
 
         const expiredMemberships = await User_Membership.findAll({
             where: {
@@ -46,7 +29,9 @@ cron.schedule('0 */6 * * *', async() => {
                 const hasActiveMembership = await User_Membership.findOne({
                     where: {
                         user_id: membership.user_id,
-                        active: true,
+                        date_start: {
+                            [Op.lte]: now
+                        },
                         date_end: {
                             [Op.gt]: now
                         }
@@ -57,6 +42,23 @@ cron.schedule('0 */6 * * *', async() => {
                     console.log(`All classes removed for user with ID ${membership.user_id} due to membership expiration.`);
                 }
             }
+        }
+
+        const startNewMemberships = await User_Membership.findAll({
+            where: {
+                date_start: {
+                    [Op.lte]: now
+                },
+                date_end: {
+                    [Op.gt]: now
+                },
+                active: false
+            }
+        });
+        for (const membership of startNewMemberships) {
+            membership.active = true;
+            console.log(`Membership with ID ${membership.id} has started.`);
+            await membership.save();
             await adjustUserClasses(membership.user_id);
         }
 
