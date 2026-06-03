@@ -2,164 +2,277 @@ import React from 'react'
 import NavBar from '../UI/NavBar'
 import Footer from '../UI/Footer'
 import ModalEliminateUser from '../UI/ModalEliminateUser';
+import ModalRegister from '../UI/ModalRegister';
 
-import { Accordion, ListGroup,Dropdown } from 'react-bootstrap';
+import { Accordion, ListGroup,Dropdown, Spinner, Button } from 'react-bootstrap';
 import { SlOptionsVertical } from "react-icons/sl";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const UserManagement = () => {
-    const [users, setUsers] = useState([
-        { id: 1, name: 'Julian Leites', role: 'SuperAdmin' },
-        { id: 2, name: 'Federico Leites', role: 'SuperAdmin' },
-        { id: 3, name: 'Mateo Pereyra', role: 'Admin' },
-        { id: 4, name: 'Francisco Aguilar', role: 'User' },
-    ]);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const confirmElimination = (data) => {
-        //Se debe modificar para que se ingrese la contraseña del usuario logueado
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/users');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch users');
+                }
+                const data = await response.json();
+                setUsers(data);
+                setLoading(false);
+            } catch (error) {
+                setError(error.message);
+                setLoading(false);
+            }
+        };
+        fetchUsers();
+    }, []);
+
+    const handleRegisterUser = async (formData) => {
+        try {
+            const response = await fetch('http://localhost:3000/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if(!response.ok) {
+                throw new Error ('Failed to create user')
+            }
+
+            const newUser = await response.json()
+
+            setUsers((prevUsers) => [...prevUsers, newUser]);
+
+            setShowRegisterModal(false);
+            console.log("Usuario Creado con exito");
+        } catch (error) {
+            console.error('Error creating new user', error);
+            alert('No se pudo crear el usuario, intente de nuevo')
+        }
+    }
+
+    const confirmElimination = async (data) => {
         if (data.confirmation === "ELIMINAR") {
             console.log(`Usuario con ID ${selectedUser.id} eliminado`);
-            setShowModal(false);
-            // Aquí iría la lógica para eliminar al usuario, como una llamada a la API
+            setShowDeleteModal(false);
+            try {
+                const response = await fetch(`http://localhost:3000/users/${selectedUser.id}`,{
+                    method: "DELETE",
+                    headers : {
+                        'Content-Type': 'application/json'
+                    }
+                })
+
+                if(!response.ok) {
+                    throw new Error ('Failed to delete user');
+                }
+
+                const updatedUsers = users.filter(u => u.id !== selectedUser.id);
+                setUsers(updatedUsers)
+
+                setSelectedUser(null)
+            } catch (error) {
+                console.error('Failure deleting de use', error)
+                alert("No se pudo eliminar el usuario, intente de nuevo")
+            }
         }
     };
 
-    const handleDeleteUser = (user) => {
-        event.preventDefault();
-        if(user.role === 'SuperAdmin' && users.filter(u => u.role === 'SuperAdmin').length <= 1) {
+    const handleDeleteUser = (e, user) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if(user.rol === 'SuperAdmin' && users.filter(u => u.rol === 'SuperAdmin').length <= 1) {
             alert("No se puede eliminar el último SuperAdmin");
             return;
         } else{
             setSelectedUser(user);
-            setShowModal(true);
+            setShowDeleteModal(true);
         }
     }
 
-    const handlePromoteUser = (user, newRole) => {
-        const updatedUsers = users.map(u => {
-            if(u.id === user.id) {
-                return {...u, role: newRole};
+    const updateUserRol = async (userId, newRol) => {
+        try {
+            const response = await fetch(`http://localhost:3000/users/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({rol: newRol})
+            })
+            const comfirmation = await response.json()
+            if (!comfirmation) {
+                throw new Error('Failed to update user rol');
             }
-            return u;
-        });
-        console.log(`Usuario con ID ${user.id} ascendido a ${newRole}`);
-        // Aquí iría la lógica para promover al usuario, como una llamada a la API
-        setUsers(updatedUsers);
+            return true;
+
+        } catch (error) {
+            console.error("fail updating user rol ", error )
+        }
     }
 
-    const handleDemoteUser = (user, newRole) => {
-
-        const updatedUsers = users.map(u => {
-            if(u.id === user.id) {
-                return {...u, role: newRole};
-            }
-            return u;
-        });
-        console.log(`Usuario con ID ${user.id} degradado a ${newRole}`);
-        // Aquí iría la lógica para degradar al usuario, como una llamada a la API
-        setUsers(updatedUsers);
+    const handlePromoteUser = async (user, newRol) => {
+        const successful = await updateUserRol(user.id, newRol)
+        if (successful){   
+            const updatedUsers = users.map(u => {
+                if(u.id === user.id) {
+                    return {...u, rol: newRol};
+                }
+                return u;
+            });
+            console.log(`Usuario con ID ${user.id} ascendido a ${newRol}`);
+            setUsers(updatedUsers);
+        }
     }
 
-    const [showModal, setShowModal] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null);
+    const handleDemoteUser = async (user, newRol) => {
+        const successful = await updateUserRol(user.id, newRol)
+
+        if (successful){
+            const updatedUsers = users.map(u => {
+                if(u.id === user.id) {
+                    return {...u, rol: newRol};
+                }
+                return u;
+            });
+        console.log(`Usuario con ID ${user.id} degradado a ${newRol}`);
+        setUsers(updatedUsers);
+        }
+    }
+
+    if(loading) {
+        return (
+            <div className='d-flex flex-column justify-content-center align-items-center' style={{ minHeight: "100vh"}}>
+                <Spinner animation='border' variant='primary' />
+                <p className='mt-3'>Conectando con el Sistema de Gestión</p>
+            </div>
+        )
+    }
 
   return (
     <div>
         <NavBar />
         <h1 className='text-center mt-4'>Gestión de Usuarios</h1>
-        <div className='d-flex justify-content-center align-items-center gap-3' style={{ minHeight: "70vh"}}>
-            <Accordion alwaysOpen className='user-management-accordion'>
-                <Accordion.Item className='accordeon-list' eventKey="0">
-                    <Accordion.Header className='user-list-header'>SuperAdmin ({users.filter(user => user.role === 'SuperAdmin').length})</Accordion.Header>
-                    <Accordion.Body className='user-list'>
-                        { users.filter(user => user.role === 'SuperAdmin').length > 0 ? (
-                            <ListGroup>
-                                {users.filter(user => user.role === 'SuperAdmin').map(user => (
-                                    <ListGroup.Item key={user.id} className='user-list-item'>
-                                        {user.name}
-                                        <Dropdown drop="end" style={{ display: 'inline-block' }}>
-                                            <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
-                                                <SlOptionsVertical />
-                                            </Dropdown.Toggle>
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item onClick={() => handleDemoteUser(user, 'Admin')}>Degradar a Admin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handleDemoteUser(user, 'User')}>Degradar a User</Dropdown.Item>
-                                                <Dropdown.Item onClick={(e) => handleDeleteUser(user)}>
-                                                    Eliminar
-                                                </Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
-                        ) : (
-                            <p>No hay SuperAdmins registrados.</p>
-                        )}
-                    </Accordion.Body>
-                </Accordion.Item>
-
-                <Accordion.Item className='accordeon-list' eventKey="1">
-                    <Accordion.Header className='user-list-header'>Admin ({users.filter(user => user.role === 'Admin').length})</Accordion.Header>
-                    <Accordion.Body className='user-list'>
-                        { users.filter(user => user.role === 'Admin').length > 0 ? (
-                            <ListGroup>
-                                {users.filter(user => user.role === 'Admin').map(user => (
-                                    <ListGroup.Item key={user.id} className='user-list-item'>
+        <div className='text-center' style={{ minHeight: "70vh"}}>
+                <Button 
+                    className='mt-5 mb-5'
+                    variant='primary'
+                    style={{width: "400px"}}
+                    onClick={() => setShowRegisterModal(true)}
+                >
+                    Crear Usuario
+                </Button>
+            
+            <div className='d-flex justify-content-center align-items-center gap-3' >
+                <Accordion alwaysOpen className='user-management-accordion'>
+                    <Accordion.Item className='accordeon-list' eventKey="0">
+                        <Accordion.Header className='user-list-header'>SuperAdmin ({users.filter(user => user.rol === 'superAdmin').length})</Accordion.Header>
+                        <Accordion.Body className='user-list'>
+                            { users.filter(user => user.rol === 'superAdmin').length > 0 ? (
+                                <ListGroup>
+                                    {users.filter(user => user.rol === 'superAdmin').map(user => (
+                                        <ListGroup.Item key={user.id} className='user-list-item'>
                                             {user.name}
                                             <Dropdown drop="end" style={{ display: 'inline-block' }}>
-                                            <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
-                                                <SlOptionsVertical />
-                                            </Dropdown.Toggle>
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item onClick={() => handlePromoteUser(user, 'SuperAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handleDemoteUser(user, 'User')}>Degradar a User</Dropdown.Item>
-                                                <Dropdown.Item onClick={(e) => handleDeleteUser(user)}>Eliminar</Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
-                        ) : (
-                            <p>No hay Admins registrados.</p>
-                        )}
-                    </Accordion.Body>
-                </Accordion.Item>
+                                                <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
+                                                    <SlOptionsVertical />
+                                                </Dropdown.Toggle>
+                                                <Dropdown.Menu>
+                                                    <Dropdown.Item onClick={() => handleDemoteUser(user, 'admin')}>Degradar a Admin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handleDemoteUser(user, 'user')}>Degradar a User</Dropdown.Item>
+                                                    <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>
+                                                        Eliminar
+                                                    </Dropdown.Item>
+                                                </Dropdown.Menu>
+                                            </Dropdown>
+                                        </ListGroup.Item>
+                                    ))}
+                                </ListGroup>
+                            ) : (
+                                <p>No hay SuperAdmins registrados.</p>
+                            )}
+                        </Accordion.Body>
+                    </Accordion.Item>
 
-                <Accordion.Item className='accordeon-list' eventKey="2">
-                    <Accordion.Header className='user-list-header'>User ({users.filter(user => user.role === 'User').length})</Accordion.Header>
-                    <Accordion.Body className='user-list'>
-                        { users.filter(user => user.role === 'User').length > 0 ? (
-                            <ListGroup>
-                                {users.filter(user => user.role === 'User').map(user => (
-                                    <ListGroup.Item key={user.id} className='user-list-item'>
-                                        {user.name}
-                                        <Dropdown drop="end" style={{ display: 'inline-block' }}>
-                                            <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
-                                                <SlOptionsVertical />
-                                            </Dropdown.Toggle>
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item onClick={() => handlePromoteUser(user, 'SuperAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handlePromoteUser(user, 'Admin')}>Ascender a Admin</Dropdown.Item>
-                                                <Dropdown.Item onClick={(e) => handleDeleteUser(user)}>Eliminar</Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
-                        ) : (
-                            <p>No hay Users registrados.</p>
-                        )}
-                    </Accordion.Body>
-                </Accordion.Item>
-            </Accordion>
+                    <Accordion.Item className='accordeon-list' eventKey="1">
+                        <Accordion.Header className='user-list-header'>Admin ({users.filter(user => user.rol === 'admin').length})</Accordion.Header>
+                        <Accordion.Body className='user-list'>
+                            { users.filter(user => user.rol === 'admin').length > 0 ? (
+                                <ListGroup>
+                                    {users.filter(user => user.rol === 'admin').map(user => (
+                                        <ListGroup.Item key={user.id} className='user-list-item'>
+                                                {user.name}
+                                                <Dropdown drop="end" style={{ display: 'inline-block' }}>
+                                                <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
+                                                    <SlOptionsVertical />
+                                                </Dropdown.Toggle>
+                                                <Dropdown.Menu>
+                                                    <Dropdown.Item onClick={() => handlePromoteUser(user, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handleDemoteUser(user, 'user')}>Degradar a User</Dropdown.Item>
+                                                    <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>Eliminar</Dropdown.Item>
+                                                </Dropdown.Menu>
+                                            </Dropdown>
+                                        </ListGroup.Item>
+                                    ))}
+                                </ListGroup>
+                            ) : (
+                                <p>No hay Admins registrados.</p>
+                            )}
+                        </Accordion.Body>
+                    </Accordion.Item>
+
+                    <Accordion.Item className='accordeon-list' eventKey="2">
+                        <Accordion.Header className='user-list-header'>User ({users.filter(user => user.rol === 'user').length})</Accordion.Header>
+                        <Accordion.Body className='user-list'>
+                            { users.filter(user => user.rol === 'user').length > 0 ? (
+                                <ListGroup>
+                                    {users.filter(user => user.rol === 'user').map(user => (
+                                        <ListGroup.Item key={user.id} className='user-list-item'>
+                                            {user.name}
+                                            <Dropdown drop="end" style={{ display: 'inline-block' }}>
+                                                <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
+                                                    <SlOptionsVertical />
+                                                </Dropdown.Toggle>
+                                                <Dropdown.Menu>
+                                                    <Dropdown.Item onClick={() => handlePromoteUser(user, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handlePromoteUser(user, 'admin')}>Ascender a Admin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>Eliminar</Dropdown.Item>
+                                                </Dropdown.Menu>
+                                            </Dropdown>
+                                        </ListGroup.Item>
+                                    ))}
+                                </ListGroup>
+                            ) : (
+                                <p>No hay Users registrados.</p>
+                            )}
+                        </Accordion.Body>
+                    </Accordion.Item>
+                </Accordion>
+                </div>
             </div>
         <Footer />
 
         <ModalEliminateUser
-            show={showModal}
-            onHide={() => setShowModal(false)}
+            show={showDeleteModal}
+            onHide={() => setShowDeleteModal(false)}
             user={selectedUser}
             onConfirmElimination={confirmElimination}
+        />
+
+        <ModalRegister
+            show={showRegisterModal}
+            onHide={() => setShowRegisterModal(false)}
+            onRegister={handleRegisterUser}
         />
     </div>
   )
