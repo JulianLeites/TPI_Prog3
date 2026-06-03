@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { sequelize } from './db.js';
 import { PORT } from './config.js';
 import userRoutes from './routes/users.routes.js';
@@ -16,23 +17,31 @@ import { User_Class } from './models/User_Class.js';
 import { User_Membership } from './models/User_Membership.js';
 
 const app = express();
+app.use(cors());
+app.use(express.json());
 
-try {
-    app.get('/', (req, res) => {
-        res.send('Welcome to the Gym Management System API');
-    });
-    app.use(express.json());
-    app.listen(PORT);
-    app.use(userRoutes);
-    app.use(membershipRoutes);
-    app.use(classRoutes);
-    app.use(userMembershipRoutes);
-    app.use(userClassRoutes);
+app.get('/', (req, res) => {
+    res.send('Welcome to the Gym Management System API');
+});
 
-    await sequelize.sync();
+app.use(userRoutes);
+app.use(membershipRoutes);
+app.use(classRoutes);
+app.use(userMembershipRoutes);
+app.use(userClassRoutes);
 
-    console.log(`Server running on port ${PORT}`);
+async function main() {
+    try {
+        await sequelize.sync({ force: false });
+        console.log('Database connected and synced successfully');
 
-} catch (error) {
-    console.error(`Unable to connect to the database`);
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+
+    } catch (error) {
+        console.error(`Unable to connect to the database`, error);
+    }
 }
+
+main();

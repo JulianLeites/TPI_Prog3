@@ -24,7 +24,7 @@ export const getUserById = async (req, res) => {
 };
 
 export const createUser = async (req, res) => {
-    const { name, username, password, email } = req.body;
+    const { name, username, password, email, rol } = req.body;
     try {
         if (!name || !username || !password || !email) {
             return res.status(400).json({ error: 'All fields are required' });
@@ -55,13 +55,14 @@ export const createUser = async (req, res) => {
 
         if (existingEmail) {
             return res.status(400).json({ error: 'Email already exists' });
-        }
+        }  
 
         const newUser = await User.create({
             name,
             username,
             password,
-            email
+            email,
+            rol: rol
         });
         res.status(201).json(newUser);
     } catch (error) {
@@ -71,42 +72,53 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { name, username, password, email } = req.body;
+    const { name, username, password, email, rol } = req.body;
     try {
         const user = await User.findByPk(id);
+
+        if(!user) {
+            return res.status(400).json({ error: 'User Not Found' })
+        }
 
         if (name && name.length < 3) {
             return res.status(400).json({ error: 'Name must be at least 3 characters long' });
         }
 
-        if (username && username.length < 4) {
-            return res.status(400).json({ error: 'Username must be at least 4 characters long' });
-        }
-
-        const existingUser = await User.findOne({ where: { username } });
-        if (existingUser && existingUser.id !== parseInt(id)) {
-            return res.status(400).json({ error: 'Username already exists' });
+        if (username){
+            if(username.length < 4) {
+                return res.status(400).json({error: 'Username must be atleast 4 characters long'});
+            }
+            const existingUser = await User.findOne({ where: { username } });
+            if (existingUser && existingUser.id !== parseInt(id)) {
+                return res.status(400).json({ error: 'Username already exists' });
+            }
         }
 
         if (password && password.length < 8) {
             return res.status(400).json({ error: 'Password must be at least 8 characters long' });
         }
 
-        if (email && !/\S+@\S+\.\S+/.test(email)) {
-            return res.status(400).json({ error: 'Invalid email format' });
+        if(email) {
+            if (email && !/\S+@\S+\.\S+/.test(email)) {
+                return res.status(400).json({ error: 'Invalid email format' });
+            }
+            const existingEmail = await User.findOne({ where: { email } });
+            if (existingEmail && existingEmail.id !== parseInt(id)) {
+                return res.status(400).json({ error: 'Email already exists' });
+            } 
         }
 
-        if (user) {
-            user.name = name || user.name;
-            user.username = username || user.username;
-            user.password = password || user.password;
-            user.email = email || user.email;
-            await user.save();
-            res.json(user);
-        } else {
-            res.status(404).json({ error: 'User not found' });
-        }
+        
+        user.name = name || user.name;
+        user.username = username || user.username;
+        user.password = password || user.password;
+        user.email = email || user.email;
+        user.rol = rol || user.rol;
+        await user.save();
+        res.json(user);
+        
     } catch (error) {
+        console.error("Backend Error: ", error);
         res.status(500).json({ error: 'Failed to update user' });
     }
 };
