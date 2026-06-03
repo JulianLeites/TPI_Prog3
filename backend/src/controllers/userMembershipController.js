@@ -62,19 +62,32 @@ export const cancelMembership = async (req, res) => {
                     [Op.gt]: new Date()
                 }
             } 
-            });
-        if (!userMembership) {
+        });
+        
+        const pendingMembership = await User_Membership.findOne({
+            where: {
+                user_id: user_id,
+                date_start: { [Op.gt]: new Date() } 
+            } 
+        });
+        
+        if (!userMembership && !pendingMembership) {
             return res.status(404).json({ message: 'User membership not found' });
         }
 
-        if (!userMembership.automatic_renewal) {
-            return res.status(400).json({ message: 'Membership already cancelled' });
-        }
-        userMembership.automatic_renewal = false;
-        await userMembership.save();
+        const isActiveCancelled = userMembership ? !userMembership.automatic_renewal : true;
+        const isPendingCancelled = pendingMembership ? !pendingMembership.automatic_renewal : true;
 
-        const pendingMembership = await User_Membership.findOne({ where: { user_id: user_id, date_start: { [Op.gt]: new Date() } } });
-        if (pendingMembership) {
+        if (isActiveCancelled && isPendingCancelled) {
+            return res.status(400).json({ message: 'all memberships already cancelled' });
+        }
+
+        if (userMembership && userMembership.automatic_renewal) {
+            userMembership.automatic_renewal = false;
+            await userMembership.save();
+        }
+
+        if (pendingMembership && pendingMembership.automatic_renewal) {
             pendingMembership.automatic_renewal = false;
             await pendingMembership.save();
         }

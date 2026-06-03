@@ -18,6 +18,10 @@ export const Membership = sequelize.define('Membership', {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 30
+    },
+    max_classes: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
     }
 }, {
     timestamps: false,

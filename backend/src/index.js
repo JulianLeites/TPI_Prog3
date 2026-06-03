@@ -5,6 +5,7 @@ import userRoutes from './routes/users.routes.js';
 import classRoutes from './routes/classes.routes.js';
 import membershipRoutes from './routes/membership.routes.js';
 import userMembershipRoutes from './routes/userMembership.routes.js';
+import userClassRoutes from './routes/userClass.routes.js';
 import './jobs/membershipExpiration.js';
 
 import './models/Associations.js';
@@ -26,6 +27,7 @@ try {
     app.use(membershipRoutes);
     app.use(classRoutes);
     app.use(userMembershipRoutes);
+    app.use(userClassRoutes);
 
     await sequelize.sync();
 
