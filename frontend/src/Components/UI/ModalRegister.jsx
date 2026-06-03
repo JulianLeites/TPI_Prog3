@@ -11,7 +11,7 @@ const schema = z
         username: z.string().min(1, "Nombre de usuario requerido"),
         password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
         email: z.string().email("email invalido"),
-        rol: z.enum(["user", "admin", "superAdmin"], {
+        rol: z.enum(["user", "teacher", "admin", "superAdmin"], {
             errorMap: () => ({ message: "Seleccione un rol"})
         })
     })
@@ -126,6 +126,7 @@ const ModalRegister = ({show, onHide, onRegister}) => {
                                 >
                                 <option value="user">User</option>
                                 <option value="admin">Admin</option>
+                                <option value="teacher">Teacher</option>
                                 <option value="superAdmin">superAdmin</option>   
                             </select>
                             {errors.name && (

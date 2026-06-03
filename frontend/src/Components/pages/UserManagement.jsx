@@ -161,7 +161,7 @@ const UserManagement = () => {
 
   return (
     <div>
-        <NavBar isLoggedIn={user.loggedIn}/>
+        <NavBar />
         <h1 className='text-center mt-4'>Gestión de Usuarios</h1>
         <div className='text-center' style={{ minHeight: "70vh"}}>
                 <Button 
@@ -189,6 +189,7 @@ const UserManagement = () => {
                                                 </Dropdown.Toggle>
                                                 <Dropdown.Menu>
                                                     <Dropdown.Item onClick={() => handleDemoteUser(user, 'admin')}>Degradar a Admin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handleDemoteUser(user, 'teacher')}>Degradar a Teacher</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handleDemoteUser(user, 'user')}>Degradar a User</Dropdown.Item>
                                                     <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>
                                                         Eliminar
@@ -218,6 +219,7 @@ const UserManagement = () => {
                                                 </Dropdown.Toggle>
                                                 <Dropdown.Menu>
                                                     <Dropdown.Item onClick={() => handlePromoteUser(user, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handleDemoteUser(user, 'teacher')}>Degradar a Teacher</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handleDemoteUser(user, 'user')}>Degradar a User</Dropdown.Item>
                                                     <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>Eliminar</Dropdown.Item>
                                                 </Dropdown.Menu>
@@ -232,6 +234,36 @@ const UserManagement = () => {
                     </Accordion.Item>
 
                     <Accordion.Item className='accordeon-list' eventKey="2">
+                        <Accordion.Header className='user-list-header'>Profesores ({users.filter(user => user.rol === 'teacher').length})</Accordion.Header>
+                        <Accordion.Body className='user-list'>
+                            { users.filter(user => user.rol === 'teacher').length > 0 ? (
+                                <ListGroup>
+                                    {users.filter(user => user.rol === 'teacher').map(user => (
+                                        <ListGroup.Item key={user.id} className='user-list-item'>
+                                            {user.name}
+                                            <Dropdown drop="end" style={{ display: 'inline-block' }}>
+                                                <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
+                                                    <SlOptionsVertical />
+                                                </Dropdown.Toggle>
+                                                <Dropdown.Menu>
+                                                    <Dropdown.Item onClick={() => handlePromoteUser(user, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handlePromoteUser(user, 'admin')}>Ascender a Admin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handleDemoteUser(user, 'user')}>Degradar a User</Dropdown.Item>
+                                                    <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>
+                                                        Eliminar
+                                                    </Dropdown.Item>
+                                                </Dropdown.Menu>
+                                            </Dropdown>
+                                        </ListGroup.Item>
+                                    ))}
+                                </ListGroup>
+                            ) : (
+                                <p>No hay Profesores registrados.</p>
+                            )}
+                        </Accordion.Body>
+                    </Accordion.Item>
+
+                    <Accordion.Item className='accordeon-list' eventKey="3">
                         <Accordion.Header className='user-list-header'>User ({users.filter(user => user.rol === 'user').length})</Accordion.Header>
                         <Accordion.Body className='user-list'>
                             { users.filter(user => user.rol === 'user').length > 0 ? (
@@ -246,6 +278,7 @@ const UserManagement = () => {
                                                 <Dropdown.Menu>
                                                     <Dropdown.Item onClick={() => handlePromoteUser(user, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handlePromoteUser(user, 'admin')}>Ascender a Admin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => handlePromoteUser(user, 'teacher')}>Ascender a Teacher</Dropdown.Item>
                                                     <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>Eliminar</Dropdown.Item>
                                                 </Dropdown.Menu>
                                             </Dropdown>
