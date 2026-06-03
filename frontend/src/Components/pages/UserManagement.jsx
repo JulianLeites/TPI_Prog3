@@ -7,7 +7,7 @@ import { Accordion, ListGroup,Dropdown } from 'react-bootstrap';
 import { SlOptionsVertical } from "react-icons/sl";
 import { useState } from 'react';
 
-const UserManagement = () => {
+const UserManagement = ({user}) => {
     const [users, setUsers] = useState([
         { id: 1, name: 'Julian Leites', role: 'SuperAdmin' },
         { id: 2, name: 'Federico Leites', role: 'SuperAdmin' },
@@ -65,7 +65,7 @@ const UserManagement = () => {
 
   return (
     <div>
-        <NavBar />
+        <NavBar isLoggedIn={user.loggedIn}/>
         <h1 className='text-center mt-4'>Gestión de Usuarios</h1>
         <div className='d-flex justify-content-center align-items-center gap-3' style={{ minHeight: "70vh"}}>
             <Accordion alwaysOpen className='user-management-accordion'>

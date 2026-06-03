@@ -5,7 +5,7 @@ import ModalTier from "../UI/modalTier";
 import Footer from "../UI/Footer";
 import NavBar from "../UI/NavBar";
 
-function Tiers() {
+function Tiers({user}) {
   const suscriptionTiers = [
     {
       id: 1,
@@ -46,7 +46,7 @@ function Tiers() {
 
   return (
     <>
-      <NavBar />
+      <NavBar isLoggedIn={user.loggedIn}/>
       <h1 className="text-center mt-4">Elige tu plan de suscripción</h1>
       <div
         className="d-flex justify-content-center align-items-center gap-3"

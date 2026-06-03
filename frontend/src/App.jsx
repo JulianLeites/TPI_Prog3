@@ -20,12 +20,12 @@ function App() {
         {/* Se pasa setUser para que el Login pueda cambiar el estado luego */}
         <Route path="/" element={<Login onLogin={setUser}/>}/>
         <Route path="/register" element={<Register/>}/>
-        <Route path="/dashboard" element={<Dashboard isLoggedIn={user.loggedIn}/>}/>
+        <Route path="/dashboard" element={<Dashboard user={user}/>}/>
         <Route path="/clases" element={<Clases user={user}/>} />
-        <Route path="/tiers" element={<Tiers isLoggedIn={user.loggedIn}/>} />
-        <Route path="/contacto" element={<Contacto isLoggedIn={user.loggedIn}/>} />
-        <Route path="/profile" element={<Profile isLoggedIn={user.loggedIn}/>} />
-        <Route path="/user-management" element={<UserManagement isLoggedIn={user.loggedIn}/>} />
+        <Route path="/tiers" element={<Tiers user={user}/>} />
+        <Route path="/contacto" element={<Contacto user={user}/>} />
+        <Route path="/profile" element={<Profile user={user}/>} />
+        <Route path="/user-management" element={<UserManagement user={user}/>} />
       </Routes>
   )
 }
