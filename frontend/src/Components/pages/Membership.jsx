@@ -1,17 +1,30 @@
 import React, { useEffect } from "react";
 import { Button, Card, Spinner } from "react-bootstrap";
 import { useState } from "react";
+import { RiEdit2Line } from "react-icons/ri";
 import ModalBuyMembership from "../UI/ModalBuyMembership";
+import ModalNewMembership from "../UI/ModalNewMembership";
 import Footer from "../UI/Footer";
 import NavBar from "../UI/NavBar";
-import ModalNewMembership from "../UI/ModalNewMembership";
+import ModalDeleteClass from "../UI/ModalDeleteClass";
+import DefaultImage from '../../assets/img/MembershipDefaultImage.jpg'
+
 
 function Membership({user}) {
+  const initialStateMembership = {
+    name: '',
+    price: null,
+    duration: 30,
+    max_classes: null
+  }
+
   const [memberships, setMemberships] = useState([]);
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
+  const [membershipEdit, setMembershipEdit] = useState([]);
 
   const [showBuyMembershipModal, setShowBuyMembershipModal] = useState(false);
   const [showNewMembershipModal, setShowNewMembershipModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedMembership, setSelectedMembership] = useState(null);
 
   useEffect (() => {
@@ -38,30 +51,104 @@ function Membership({user}) {
     setShowBuyMembershipModal(true);
   };
 
-  const handleCreateMembership = async (formData) => {
-    try {
-      const response = await fetch('http://localhost:3000/memberships', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
+  const handleOpenForm = (membership) => {
+    if(membership){
+      setMembershipEdit(membership);
+    } else {
+      setMembershipEdit(initialStateMembership)
+    }
+    setShowNewMembershipModal(true);
+  }
+
+  const handleSave = async (formData) => {
+    let finalImageUrl = membershipEdit.imageUrl || null;
+    if(formData.imageFile) {
+      const cloudinaryData = new FormData();
+      cloudinaryData.append('file', formData.imageFile);
+      cloudinaryData.append('upload_preset', 'images_memberships')
+
+      const cloudRes = await fetch("https://api.cloudinary.com/v1_1/dq5k1qn0e/image/upload", {
+        method: "POST",
+        body: cloudinaryData
       });
+      const cloudJson = await cloudRes.json();
+      finalImageUrl = cloudJson.secure_url;
+    }
 
-      if(!response.ok) {
-        throw new Error ('Failed creating membership')
+    const dataToSend = {
+      name: formData.name,
+      price: formData.price,
+      duration: formData.duration,
+      max_classes: formData.max_classes,
+      imageUrl: finalImageUrl
+    }
+
+    try {
+      if(membershipEdit.id){
+        const response = await fetch(`http://localhost:3000/memberships/${membershipEdit.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(dataToSend)
+        });
+
+        if(!response.ok){
+          throw new Error('Failed to update membeship')
+        }
+
+        const editedMembeship = await response.json();
+
+        setMemberships(memberships.map(m => m.id === membershipEdit.id ? editedMembeship : m))
+      } else {
+        const response = await fetch('http://localhost:3000/memberships', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(dataToSend)
+        });
+        
+        if(!response.ok) {
+          throw new Error ('Failed creating membership')
+        }
+        
+        const newMembership = await response.json();
+        
+        setMemberships([...memberships, newMembership]);
       }
-
-      const newMembership = await response.json();
-
-      setMemberships([...memberships, newMembership]);
-      setShowNewMembershipModal(false);
-      console.log('Usuario Creado con exito');
+        setShowNewMembershipModal(false);
     } catch (error) {
-      console.error('Error Creating new membership', error);
-      alert('No se pudo crear la membresia, intente de nuevo');
+      console.error('An error occured', error);
+      alert('Hubo un error al guardar la membresia, intente de nuevo');
     }
   }
+
+  const handleOpenDelete = (id) => {
+      setSelectedMembership(id);
+      setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+        try {
+            const response = await fetch(`http://localhost:3000/memberships/${selectedMembership}`, {
+                method: "DELETE"
+            })
+
+            if(!response.ok) {
+                throw new Error('Failed to delete membership');
+            }
+
+            const updateMembership = memberships.filter(m => m.id !== selectedMembership);
+            setMemberships(updateMembership);
+
+            setSelectedMembership(null);
+        } catch(error) {
+            console.error('Failure deliting membership', error)
+            alert("No se pudo eliminar la membresia, intente de nuevo")
+        }
+        setShowDeleteModal(false);
+    };
 
   if (loading) {
         return(
@@ -82,7 +169,7 @@ function Membership({user}) {
             variant="success"
             size="sm"
             style={{height:'40px'}}
-            onClick={() => setShowNewMembershipModal(true)}
+            onClick={() => handleOpenForm()}
           >
             + Crear Membresia
           </Button>
@@ -98,14 +185,31 @@ function Membership({user}) {
               }}
               key={memberships.id}
             >
-              {/* <Card.Img variant="top" src={memberships.imageUrl} style={{maxHeight: "38vh"}} /> */}
+
+              <Card.Img variant="top" src={memberships.imageUrl || DefaultImage} style={{maxHeight: "38vh", objectFit:'cover'}} />
               <Card.Body>
                 <Card.Title>{memberships.name}</Card.Title>
                 <Card.Text>{memberships.price}</Card.Text>
-                <Card.Text>{memberships.maxClasses}</Card.Text>
+                <Card.Text>{memberships.max_classes}</Card.Text>
                 <Button variant="primary" onClick={() => handleSuscript(memberships)}>
                   Suscribirse
-                </Button>
+                </Button> <br/>
+                <div className="mt-2 d-flex justify-content-center align-items-center gap-2">
+                  <Button
+                    variant="danger"
+                    onClick={() => handleOpenDelete(memberships.id)}
+                  >
+                    Borrar
+                  </Button>
+
+                  <Button 
+                    variant='success'
+                    className="p-o text-dark"
+                    onClick={() => handleOpenForm(memberships)}
+                    >
+                    <RiEdit2Line size={24}/>
+                  </Button>
+                </div>
               </Card.Body>
             </Card>
           ))}
@@ -123,7 +227,14 @@ function Membership({user}) {
       <ModalNewMembership
         show={showNewMembershipModal}
         onHide={() => setShowNewMembershipModal(false)}
-        onCreateMembership={handleCreateMembership}
+        onSave={handleSave}
+        membershipEdit={membershipEdit}
+      />
+
+      <ModalDeleteClass
+        show={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
+        onConfirmDelete={handleConfirmDelete}
       />
     </>
   );

@@ -11,9 +11,11 @@ const schema = z
         username: z.string().min(1, "Nombre de usuario requerido"),
         password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
         email: z.string().email("email invalido"),
-        rol: z.enum(["user", "teacher", "admin", "superAdmin"], {
-            errorMap: () => ({ message: "Seleccione un rol"})
-        })
+        rol: z.string({required_error: 'Seleccione un Rol'})
+            .nonempty({ message: 'Seleccione un Rol'})
+            .refine((val) => ["user", "teacher", "admin", "superAdmin"].includes(val), {
+                message: 'Seleccione un rol valido'
+            })
     })
 
 const ModalRegister = ({show, onHide, onRegister}) => {

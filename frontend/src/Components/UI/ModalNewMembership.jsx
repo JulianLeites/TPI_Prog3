@@ -11,7 +11,7 @@ const schema = z
             inavlid_type_error: 'El precio debe ser un numero'
         })
         .positive('Debe ser un numero positivo'),
-        duration_days: z.coerce.number({
+        duration: z.coerce.number({
             inavlid_type_error: 'La duración debe ser un numero'
         })
         .int('Debe ser un numero entero')
@@ -20,14 +20,23 @@ const schema = z
             inavlid_type_error: 'La cantidad de clases debe ser un numero'
         })
         .int('Debe ser un numero entero')
-        .positive('Debe ser un numero positivo')
+        .positive('Debe ser un numero positivo'),
+        imageFile: z
+            .instanceof(File)
+            .optional()
+            .refine((file) => !file || file.size <= 2 * 1024 * 1024, {
+                message: 'La imagen debe pesar menos de 2MB'
+            })
+            .refine((file) => !file || ['image/jpeg', 'image/png', 'image/webp'].includes(file.type), {
+                message: "Solo se permiten formatos JPG, PNG o WEBP"
+            })
     })
 
-const ModalNewMembership = ({show, onHide, onCreateMembership}) => {
+const ModalNewMembership = ({show, onHide, onSave, membershipEdit}) => {
     const {
         register,
         handleSubmit,
-        setError,
+        setValue,
         reset,
         formState: {errors}
     } = useForm ({
@@ -35,23 +44,28 @@ const ModalNewMembership = ({show, onHide, onCreateMembership}) => {
     })
 
     useEffect(() => {
-        reset({
-            name: '',
-            price: '',
-            durationDays: 30,
-            maxClasses: ''
-        })
-    }, [show, reset])
+        if(show && membershipEdit){
+            reset(membershipEdit)
+        } else {
+            reset({
+                name: '',
+                price: '',
+                duration: 30,
+                max_classes: '',
+                imageFile: undefined
+            })
+        }
+    }, [show, membershipEdit, reset])
 
   return (
     <div>
-        <Modal show={show} onHide={onHide} centered size='lg' backdrop='static' keyboard={false}>
+        <Modal show={show} onHide={onHide} centered backdrop='static' keyboard={false}>
             <Modal.Header>
                 <Modal.Title>Nueva Membresia</Modal.Title>
             </Modal.Header>
 
             <Modal.Body>
-                <form id='membership' onSubmit={handleSubmit(onCreateMembership)}>
+                <form id='membership' onSubmit={handleSubmit(onSave)}>
                     <Row>
                         <Col>
                             <label className='form-label'>Nombre de la Membresia</label>
@@ -81,12 +95,12 @@ const ModalNewMembership = ({show, onHide, onCreateMembership}) => {
                         <Col>
                             <label className='form-label'>Duracion</label>
                             <input
-                                {...register("duration_days")}
+                                {...register("duration")}
                                 className='form-control mb-2'
                                 type='number'
                             />
-                            {errors.duration_days && (
-                                <p className='text-danger'>{errors.duration_days.message}</p>
+                            {errors.duration && (
+                                <p className='text-danger'>{errors.duration.message}</p>
                             )}
                         </Col>
                         <Col>
@@ -98,6 +112,25 @@ const ModalNewMembership = ({show, onHide, onCreateMembership}) => {
                             />
                             {errors.max_classes && (
                                 <p className='text-danger'>{errors.max_classes.message}</p>
+                            )}
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            <label className='form-label'>Link de la imagen</label>
+                            <input
+                                className='form-control mb-2'
+                                type='file'
+                                accept='image/*'
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if(file) {
+                                        setValue('imageFile', file, {shouldValidate: true});
+                                    }
+                                }}
+                            />
+                            {errors.imageFile && (
+                                <p className='text-danger'>{errors.imageFile.message}</p>
                             )}
                         </Col>
                     </Row>
