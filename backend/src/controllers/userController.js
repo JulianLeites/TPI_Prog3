@@ -1,5 +1,7 @@
 import { User } from '../models/Users.js';
-
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { secretKey } from '../config.js';
 export const getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll();
@@ -56,11 +58,15 @@ export const createUser = async (req, res) => {
         if (existingEmail) {
             return res.status(400).json({ error: 'Email already exists' });
         }  
+            
+        const saltRound = 10;
+        const salt = await bcrypt.genSalt(saltRound);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
         const newUser = await User.create({
             name,
             username,
-            password,
+            password: hashedPassword,
             email,
             rol: rol
         });
@@ -69,7 +75,24 @@ export const createUser = async (req, res) => {
         res.status(500).json({ error: 'Failed to create user' });
     }
 };
+export const loginUser = async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const user = await User.findOne({ where: { username } });
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid username' });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Invalid password' });
+        }
 
+        const token = jwt.sign({ username: user.username, password: user.password, rol: user.rol }, secretKey, { expiresIn: "1h" });
+        res.json({ token });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to login user' });
+    }
+};
 export const updateUser = async (req, res) => {
     const { id } = req.params;
     const { name, username, password, email, rol } = req.body;

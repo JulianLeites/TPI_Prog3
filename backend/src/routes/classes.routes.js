@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { verifyToken } from '../middlewares/verifyToken.js';
 import {
     getAllClasses,
     getClassById,
@@ -10,9 +11,9 @@ import {
 const router = Router();
 
 router.get('/classes', getAllClasses);
-router.get('/classes/:id', getClassById);
-router.post('/classes', createClass);
-router.put('/classes/:id', updateClass);
-router.delete('/classes/:id', deleteClass);
+router.get('/classes/:id', verifyToken, getClassById);
+router.post('/classes', verifyToken, createClass);
+router.put('/classes/:id', verifyToken, updateClass);
+router.delete('/classes/:id', verifyToken, deleteClass);
 
 export default router;
