@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { verifyToken } from '../middlewares/verifyToken.js';
 import {
     assignUserToClass,
     removeUserFromClass
@@ -6,7 +7,7 @@ import {
 
 const router = Router();
 
-router.post('/users/:user_id/classes/:class_id', assignUserToClass);
-router.delete('/users/:user_id/classes/:class_id/delete', removeUserFromClass);
+router.post('/users/:user_id/classes/:class_id', verifyToken, assignUserToClass);
+router.delete('/users/:user_id/classes/:class_id/delete', verifyToken, removeUserFromClass);
 
 export default router;

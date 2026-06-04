@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { verifyToken } from '../middlewares/verifyToken.js';
 import {
     getAllMemberships,
     getMembershipById,
@@ -9,9 +10,9 @@ import {
 const router = Router();
 
 router.get('/memberships', getAllMemberships);
-router.get('/memberships/:id', getMembershipById);
-router.post('/memberships', createMembership);
-router.put('/memberships/:id', updateMembership);
-router.delete('/memberships/:id', deleteMembership);
+router.get('/memberships/:id', verifyToken, getMembershipById);
+router.post('/memberships', verifyToken, createMembership);
+router.put('/memberships/:id', verifyToken, updateMembership);
+router.delete('/memberships/:id', verifyToken, deleteMembership);
 
 export default router;
