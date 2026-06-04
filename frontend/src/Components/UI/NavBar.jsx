@@ -11,7 +11,7 @@ const NavBar = ({isLoggedIn}) => {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link as={NavLink} to='/tiers'>Membresias</Nav.Link>
+            <Nav.Link as={NavLink} to='/memberships'>Membresias</Nav.Link>
             <Nav.Link as={NavLink} to='/clases'>Clases</Nav.Link>
             <Nav.Link as={NavLink} to='/contacto'>Contacto</Nav.Link>
             {/* Se debe modificar para que solo el superAdmin pueda acceder a Administrar Usuarios */}

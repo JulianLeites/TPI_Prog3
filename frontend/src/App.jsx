@@ -3,7 +3,7 @@ import Login from "./components/auth/Login.jsx"
 import Register from "./components/auth/Register.jsx"
 import Dashboard from "./components/pages/Dashboard.jsx"
 import Clases from "./components/pages/Clases.jsx"
-import Tiers from "./Components/pages/Tiers.jsx"
+import Membership from "./Components/pages/Membership.jsx"
 import Profile from "./components/pages/Profile.jsx"
 import Contacto from "./components/pages/Contacto.jsx"
 import UserManagement from "./Components/pages/UserManagement.jsx"
@@ -22,7 +22,7 @@ function App() {
         <Route path="/register" element={<Register/>}/>
         <Route path="/dashboard" element={<Dashboard user={user}/>}/>
         <Route path="/clases" element={<Clases user={user}/>} />
-        <Route path="/tiers" element={<Tiers user={user}/>} />
+        <Route path="/memberships" element={<Membership user={user}/>} />
         <Route path="/contacto" element={<Contacto user={user}/>} />
         <Route path="/profile" element={<Profile user={user}/>} />
         <Route path="/user-management" element={<UserManagement user={user}/>} />
