@@ -80,7 +80,7 @@ const schema = z
     }
   });
 
-function ModalTier({ show, onHide, tier }) {
+function ModalBuyMembership({ show, onHide, selectedMembership }) {
   const {
     register,
     handleSubmit,
@@ -151,10 +151,10 @@ function ModalTier({ show, onHide, tier }) {
           <Accordion className="mb-3">
             <Accordion.Item eventKey="0">
               <Accordion.Header>
-                <h5>{tier ? `Suscripción: ${tier.name}` : "Suscripción"}</h5>
+                <h5>{selectedMembership ? `Suscripción: ${selectedMembership.name}` : "Suscripción"}</h5>
               </Accordion.Header>
               <Accordion.Body>
-                <p>Cuota: {tier ? tier.quota : "N/A"}</p>
+                <p>Cuota: {selectedMembership ? selectedMembership.quota : "N/A"}</p>
               </Accordion.Body>
             </Accordion.Item>
           </Accordion>
@@ -274,7 +274,7 @@ function ModalTier({ show, onHide, tier }) {
               </Col>
             </Row>
           </form>
-          <p className="text-center">Total a pagar: {tier ? `$${tier.price}` : "N/A"}</p>
+          <p className="text-center">Total a pagar: {selectedMembership ? `$${selectedMembership.price}` : "N/A"}</p>
         </Modal.Body>
 
         <Modal.Footer>
@@ -295,4 +295,4 @@ function ModalTier({ show, onHide, tier }) {
   );
 }
 
-export default ModalTier;
+export default ModalBuyMembership;

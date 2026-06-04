@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Modal, Button, Row, Col } from 'react-bootstrap'
 import { useForm } from "react-hook-form";
 import { email, z } from "zod";
@@ -21,6 +21,7 @@ const ModalRegister = ({show, onHide, onRegister}) => {
         register,
         handleSubmit,
         setError,
+        reset,
         formState: {errors}
     } = useForm({
         resolver: zodResolver(schema)
@@ -35,6 +36,17 @@ const ModalRegister = ({show, onHide, onRegister}) => {
         }
         onRegister(dataForBackend);
     }
+
+    useEffect(() => {
+        reset({
+            name: '',
+            surname: '',
+            username: '',
+            password: '',
+            email: '',
+            rol: ''
+        })
+    }, [show, reset])
 
   return (
     <div>
@@ -122,15 +134,15 @@ const ModalRegister = ({show, onHide, onRegister}) => {
                             <label className='form-label'>Rol</label>
                             <select
                                 {...register("rol")}
-                                className='form-control mb-2'
+                                className='form-select mb-2'
                                 >
                                 <option value="user">User</option>
                                 <option value="admin">Admin</option>
                                 <option value="teacher">Teacher</option>
                                 <option value="superAdmin">superAdmin</option>   
                             </select>
-                            {errors.name && (
-                                <p className='text-danger'>{errors.name.message}</p>
+                            {errors.rol && (
+                                <p className='text-danger'>{errors.rol.message}</p>
                             )}
                         </Col>
                     </Row>
@@ -138,7 +150,7 @@ const ModalRegister = ({show, onHide, onRegister}) => {
             </Modal.Body>
 
             <Modal.Footer>
-                <Button variant="secundary">
+                <Button variant="danger" onClick={onHide}>
                     Cancelar
                 </Button>
                 <Button

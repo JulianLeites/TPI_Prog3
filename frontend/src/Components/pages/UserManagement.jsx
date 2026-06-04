@@ -166,7 +166,7 @@ const UserManagement = () => {
         <div className='text-center' style={{ minHeight: "70vh"}}>
                 <Button 
                     className='mt-5 mb-5'
-                    variant='primary'
+                    variant='success'
                     style={{width: "400px"}}
                     onClick={() => setShowRegisterModal(true)}
                 >
