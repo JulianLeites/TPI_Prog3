@@ -12,7 +12,11 @@ const schema = z
         })
         .int('Debe ser un numero entero')
         .positive('Debe ser un numero positivo'),
-        day: z.string().min(1, 'Dia requerido'),
+        day: z.string({required_error: 'Seleccione un Dia'})
+            .nonempty({ message: 'Seleccione un Dia'})
+            .refine((val) => ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"].includes(val), {
+                message: 'Seleccione un dia valido'
+            }),
         hour: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato invalido (HH:MM)'),
         description: z.string().min(1, 'Descripcion requerida'),
         teacher_id: z.coerce.number({
@@ -78,12 +82,19 @@ const ModalClase = ({ show, onHide, classEdit, setClassEdit, onSave, teachers = 
                     <Row>
                         <Col>
                             <label className='form-label'>Dia</label>
-                            <input
+                            <select
                                 {...register("day")}
-                                className='form-control mb-2'
-                                type='text'
-                                placeholder='Dia'
-                            />
+                                className='form-select mb-2'
+                            >
+                                <option value=''>Seleccione un Dia</option>
+                                <option value='Lunes'>Lunes</option>
+                                <option value='Martes'>Martes</option>
+                                <option value='Miercoles'>Miercoles</option>
+                                <option value='Jueves'>Jueves</option>
+                                <option value='Viernes'>Viernes</option>
+                                <option value='Sabado'>Sabado</option>
+                                <option values='Domingo'>Domingo</option>
+                            </select>
                             {errors.day && (
                                 <p className='text-danger'>{errors.day.message}</p>
                             )}

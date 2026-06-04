@@ -22,6 +22,10 @@ export const Membership = sequelize.define('Membership', {
     max_classes: {
         type: DataTypes.INTEGER,
         allowNull: false,
+    },
+    imageUrl: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     timestamps: false,
