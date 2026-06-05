@@ -17,9 +17,9 @@ function App() {
   return (
       <Routes>
         {/* Se pasa setUser para que el Login pueda cambiar el estado luego */}
-        <Route path="/" element={<Login onLogin={setUser}/>}/>
-        <Route path="/register" element={<Register/>}/>
-        <Route path="/dashboard" element={<Dashboard user={user}/>}/>
+        {/* <Route path="/" element={<Login onLogin={setUser}/>}/> */}
+        {/* <Route path="/register" element={<Register/>}/> */}
+        <Route path="/" element={<Dashboard user={user}/>}/>
         <Route path="/clases" element={<Clases user={user}/>} />
         <Route path="/memberships" element={<Membership user={user}/>} />
         <Route path="/contacto" element={<Contacto user={user}/>} />
