@@ -45,12 +45,52 @@ const Login = ({show, onHide}) => {
     resetRegister()
   }, [show, isLoginMode, resetLogin, resetRegister])
 
-  const onLoginSubmit = (data) => {
-    console.log('Login data: ', data)
-    onHide()
+  const onLoginSubmit = async (data) => {
+    try {
+      const response = await fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+      })
+
+      const resData = await response.json();
+
+      if(!resData) {
+        throw new Error(resData.error || 'Credenciales incorrectas')
+      }
+
+      localStorage.setItem('token', resData.token);
+
+      onHide()
+      window.location.reload()
+    } catch (error) {
+      console.error('Error Login: ', error)
+    }
   } 
 
-  const onRegisterSubmit = (data) => {
+  const onRegisterSubmit = async (data) => {
+    try {
+      const response = await fetch('http://localhost:3000/register', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+      })
+
+      const resData = await response.json();
+
+      if(!resData){
+        throw new Error(resData.error || 'Error al registrar usuario')
+      }
+
+      setIsLoginMode(false)
+    } catch(error) {
+      console.error('Error Register: ', error)
+    }
+
     console.log('Register data: ', data)
     onHide()
   } 
