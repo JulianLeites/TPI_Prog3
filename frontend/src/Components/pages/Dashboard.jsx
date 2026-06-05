@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import NavBar from '../UI/NavBar.jsx';
 import Footer from '../UI/Footer.jsx';
 import { Container, Row, Col, Button, Card } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import Login from '../auth/Login.jsx';
 
-const Dashboard = ({ user }) => {
+const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation()
+
+  const [showLoginModal, setShowLoginModal] = useState(false)
+
+  useEffect(() => {
+    if(location.state?.openLogin) {
+      setShowLoginModal(true)
+      navigate('/', {replace: true, state: {}})
+    }
+  }, [location, navigate])
 
   return (
     <div className="bg-light d-flex flex-column" style={{ minHeight: "100vh" }}>
-      <NavBar isLoggedIn={user.loggedIn} />
+      <NavBar />
 
       <div className="flex-grow-1">
         <div 
@@ -41,7 +52,7 @@ const Dashboard = ({ user }) => {
                     variant="outline-light" 
                     size="lg" 
                     className="px-4 shadow"
-                    onClick={() => navigate('/tiers')}
+                    onClick={() => navigate('/memberships')}
                   >
                     Ver Membresías
                   </Button>
@@ -62,6 +73,9 @@ const Dashboard = ({ user }) => {
               <p className="text-muted fs-5">
                 Si sos administrador, la plataforma te ofrece un panel integral para dar de alta nuevas actividades, modificar horarios y gestionar las capacidades máximas del establecimiento de manera ágil y centralizada.
               </p>
+              <Button variant="link" className="text-decoration-none mt-2" onClick={() => setShowLoginModal(true)}>
+                ¿Ya tenés cuenta? Iniciá sesión acá
+              </Button>
             </Col>
           </Row>
 
@@ -103,6 +117,8 @@ const Dashboard = ({ user }) => {
           </Row>
         </Container>
       </div>
+
+      <Login show={showLoginModal} onHide={() => setShowLoginModal(false)} />
 
       <Footer />
     </div>

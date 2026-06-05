@@ -39,7 +39,7 @@ const Contacto = ({user}) => {
     }
     return (
     <>
-    <NavBar isLoggedIn={user.loggedIn}/>
+    <NavBar/>
     <div>
         
         <div className='mx-5'>

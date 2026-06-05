@@ -8,6 +8,7 @@ import Contacto from "./components/pages/Contacto.jsx"
 import UserManagement from "./Components/pages/UserManagement.jsx"
 
 import { useState } from "react"
+import ProtectedRoutes from "./routes/protectedRoutes.jsx"
 
 
 function App() {
@@ -17,14 +18,16 @@ function App() {
   return (
       <Routes>
         {/* Se pasa setUser para que el Login pueda cambiar el estado luego */}
-        {/* <Route path="/" element={<Login onLogin={setUser}/>}/> */}
-        {/* <Route path="/register" element={<Register/>}/> */}
-        <Route path="/" element={<Dashboard user={user}/>}/>
-        <Route path="/clases" element={<Clases user={user}/>} />
-        <Route path="/memberships" element={<Membership user={user}/>} />
-        <Route path="/contacto" element={<Contacto user={user}/>} />
-        <Route path="/profile" element={<Profile user={user}/>} />
-        <Route path="/user-management" element={<UserManagement user={user}/>} />
+        <Route path="/" element={<Dashboard/>}/>
+        <Route path="/contacto" element={<Contacto/>} />
+
+        <Route element={<ProtectedRoutes/>}>
+          <Route path="/clases" element={<Clases/>} />
+          <Route path="/memberships" element={<Membership/>} />
+          <Route path="/profile" element={<Profile/>} />
+          
+          <Route path="/user-management" element={<UserManagement/>} />
+        </Route>
       </Routes>
   )
 }

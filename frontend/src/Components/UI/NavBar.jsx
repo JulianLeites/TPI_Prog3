@@ -2,12 +2,26 @@ import { Button } from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import { NavLink } from 'react-router-dom';
-import { useState } from 'react';
+import { NavLink, replace, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import Login from '../auth/Login';
+import { useAuth } from '../../context/AuthContext';
 
 const NavBar = ({isLoggedIn}) => {
   const [showLogin, setShowLogin] = useState(false)
+  const {isAuthenticated, user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+
+  }, [user, isAuthenticated])
+
+  const handleLogout = () => {
+    navigate('/', {replace: true, state: {}})
+    setTimeout(() => {
+      logout()
+    }, 1)
+  }
 
   return (
     <>
@@ -21,18 +35,35 @@ const NavBar = ({isLoggedIn}) => {
               <Nav.Link as={NavLink} to='/clases'>Clases</Nav.Link>
               <Nav.Link as={NavLink} to='/contacto'>Contacto</Nav.Link>
               {/* Se debe modificar para que solo el superAdmin pueda acceder a Administrar Usuarios */}
-              <Nav.Link as={NavLink} to='/user-management'>Administrar Usuarios</Nav.Link>
+              {isAuthenticated && (user?.rol === 'superAdmin') && (
+                <Nav.Link as={NavLink} to='/user-management'>Administrar Usuarios</Nav.Link>
+              )}
             </Nav>
             <Nav>
-              {isLoggedIn ? 
-                <Nav.Link as={NavLink} to='/profile'> <h6>Perfil </h6></Nav.Link> : 
-                <Button
-                  variant='link'
-                  onClick={() => setShowLogin(true)}
-                >
-                  Acceder
-                </Button>
-              }
+              {isAuthenticated ? (
+                <div className="d-flex flex-row align-items-center justify-content-center gap-3">
+                  <Nav.Link as={NavLink} to={'/profile'} className='m-0 p-0 text-dark fw-semibold text-decoration-none'>
+                    <span>{user?.username}</span>
+                  </Nav.Link>
+                  <Button
+                    variant='danger'
+                    size='sm'
+                    onClick={handleLogout}
+                  >
+                    Salir
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <Button
+                    variant='link'
+                    className='text-dark fw-bold text-decoration-none'
+                    onClick={() => setShowLogin(true)}
+                    >
+                    Acceder
+                  </Button>
+                </div>
+              )}
             </Nav>
           </Navbar.Collapse>
         </Container>

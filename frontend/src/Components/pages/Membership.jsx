@@ -161,7 +161,7 @@ function Membership({user}) {
 
   return (
     <>
-      <NavBar isLoggedIn={user.loggedIn}/>
+      <NavBar/>
       <div style={{ minHeight: "70vh"}}>
         <div className="d-flex justify-content-between align-items-center m-5">
           <h2 className=" mt-4">Elige tu plan de suscripción</h2>
