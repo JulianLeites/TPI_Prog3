@@ -16,6 +16,14 @@ router.get('/users', getAllUsers);
 router.get('/users/:id', getUserById);
 router.post('/register', createUser);
 router.post('/login', loginUser);
+
+router.get('/verify', verifyToken, (req, res) => {
+    return res.status(200).json({
+        message: 'Token valido y verificado',
+        user: req.user
+    })
+})
+
 router.put('/users/:id', verifyToken, updateUser);
 router.delete('/users/:id', verifyToken, deleteUser);
 

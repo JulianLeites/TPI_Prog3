@@ -168,7 +168,7 @@ const Clases = ({ user }) => {
 
     return (
         <>
-            <NavBar isLoggedIn={user.loggedIn} />
+            <NavBar/>
             <div style={{ minHeight: "70vh"}}>
                 <Container className="py-5">
                     <div className="d-flex justify-content-between align-items-center mb-5">

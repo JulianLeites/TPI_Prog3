@@ -3,6 +3,7 @@ import { Modal, Button, Row, Col } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useAuth } from '../../context/AuthContext'
 
 const loginSchema = z
   .object({
@@ -21,6 +22,8 @@ const registerSchema = z
 
 const Login = ({show, onHide}) => {
   const [isLoginMode, setIsLoginMode] = useState(true)
+
+  const { login } = useAuth()
 
   const {
     register: registerLogin,
@@ -57,14 +60,17 @@ const Login = ({show, onHide}) => {
 
       const resData = await response.json();
 
-      if(!resData) {
+      if(!response.ok) {
         throw new Error(resData.error || 'Credenciales incorrectas')
       }
 
-      localStorage.setItem('token', resData.token);
+      const tokenParts = resData.token.split('.')
+      const encodedPayLoad = tokenParts[1]
+      const decodedUser = JSON.parse(atob(encodedPayLoad))
+
+      login(decodedUser, resData.token)
 
       onHide()
-      window.location.reload()
     } catch (error) {
       console.error('Error Login: ', error)
     }
