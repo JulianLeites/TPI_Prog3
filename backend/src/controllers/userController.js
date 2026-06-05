@@ -75,6 +75,7 @@ export const createUser = async (req, res) => {
         res.status(500).json({ error: 'Failed to create user' });
     }
 };
+
 export const loginUser = async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -93,6 +94,7 @@ export const loginUser = async (req, res) => {
         res.status(500).json({ error: 'Failed to login user' });
     }
 };
+
 export const updateUser = async (req, res) => {
     const { id } = req.params;
     const { name, username, password, email, rol } = req.body;
