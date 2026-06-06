@@ -8,9 +8,13 @@ import Footer from "../UI/Footer";
 import NavBar from "../UI/NavBar";
 import ModalDeleteClass from "../UI/ModalDeleteClass";
 import DefaultImage from '../../assets/img/MembershipDefaultImage.jpg'
+import { useAuth } from "../../context/AuthContext";
 
 
-function Membership({user}) {
+function Membership() {
+  const { user, loading: authLoading } = useAuth()
+  console.log("Estado actual en Membership -> Autenticando:", authLoading, "| Usuario:", user);
+
   const initialStateMembership = {
     name: '',
     price: null,
@@ -45,6 +49,45 @@ function Membership({user}) {
     };
     fetchMemberships();
   }, []);
+
+  const handleBuySubmit = async (data) => {
+    try {
+      const token = localStorage.getItem('token')
+
+      if(!user || !user.id) {
+        throw new Error('You must login to adquiere a membership')
+      }
+
+      if(!selectedMembership || !selectedMembership.id){
+        throw new Error('Invalid membership selected')
+      }
+
+      const response = await fetch(`http://localhost:3000/memberships/assign/${selectedMembership.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      })
+
+      const resData = await response.json()
+
+      if(!response.ok){
+        throw new Error(resData.message || 'Error procesing membeship')
+      }
+
+      alert(resData.message)
+
+      console.log('suscripcion exitosa: ', resData.userMembership)
+    } catch (error) {
+      throw error
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    console.log('datos recibidos en membership: ', data)
+  }
 
   const handleSuscript = (membership) => {
     setSelectedMembership(membership);
@@ -150,7 +193,7 @@ function Membership({user}) {
         setShowDeleteModal(false);
     };
 
-  if (loading) {
+  if (loading || authLoading) {
         return(
             <div className='d-flex flex-column justify-content-center align-items-center' style={{ minHeight: "100vh"}}>
                 <Spinner animation='border' variant='primary' />
@@ -222,6 +265,7 @@ function Membership({user}) {
         show={showBuyMembershipModal}
         onHide={() => setShowBuyMembershipModal(false)}
         selectedMembership={selectedMembership}
+        onBuySubmit={handleBuySubmit}
       />
 
       <ModalNewMembership

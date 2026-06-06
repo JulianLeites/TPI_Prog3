@@ -12,9 +12,6 @@ import ProtectedRoutes from "./routes/protectedRoutes.jsx"
 
 
 function App() {
-
-  const [user, setUser] = useState({ loggedIn: true, role: 'admin' });
-
   return (
       <Routes>
         {/* Se pasa setUser para que el Login pueda cambiar el estado luego */}

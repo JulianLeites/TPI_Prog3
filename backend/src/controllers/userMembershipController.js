@@ -4,8 +4,8 @@ import { Membership } from '../models/membership.js';
 import { Op } from 'sequelize';
 
 export const assignMembershipToUser = async (req, res) => {
-    const { user_id, membership_id } = req.params;
-    const userId = parseInt(user_id);
+    const { membership_id } = req.params;
+    const userId = req.user.id;
     const membershipId = parseInt(membership_id);
 
     try {
