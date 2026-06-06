@@ -7,7 +7,7 @@ import {
 
 const router = Router();
 
-router.post('/users/:user_id/memberships/:membership_id', verifyToken, assignMembershipToUser);
+router.post('/memberships/assign/:membership_id', verifyToken, assignMembershipToUser);
 router.put('/users/:user_id/memberships/cancel', verifyToken, cancelMembership);
 
 export default router;

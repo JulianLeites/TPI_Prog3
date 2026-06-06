@@ -29,7 +29,25 @@ const schema = z
       .regex(/^\d+$/, "CVV debe ser numérico"),
   })
   .superRefine((data, ctx) => {
-    const { documentType, documentNumber } = data;
+    const { documentType, documentNumber, expiryDate } = data;
+
+    if(expiryDate && /^(0[1-9]|1[0-2])\/\d{2}$/.test(expiryDate)){
+      const[expMonthStr, expYearStr] = expiryDate.split('/')
+      const expMonth = parseInt(expMonthStr, 10)
+      const expYear = parseInt("20" + expYearStr, 10)
+
+      const currentDay = new Date()
+      const currentMonth = currentDay.getMonth() + 1
+      const currentYear = currentDay.getFullYear()
+
+      if(expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)){
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['expiryDate'],
+          message: 'La tarjeta ya esta vencida'
+        })
+      }
+    }
 
     // Validaciones específicas según el tipo de documento
     if (documentType === "DNI") {
@@ -80,7 +98,7 @@ const schema = z
     }
   });
 
-function ModalBuyMembership({ show, onHide, selectedMembership }) {
+function ModalBuyMembership({ show, onHide, selectedMembership, onBuySubmit }) {
   const {
     register,
     handleSubmit,
@@ -123,11 +141,10 @@ function ModalBuyMembership({ show, onHide, selectedMembership }) {
 
   const onSubmit = async (data) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      throw new Error();
-      console.log(data);
+      await onBuySubmit(data)
+      onHide()
     } catch (error) {
-      setError("root", { message: "Error al procesar la compra" });
+      setError("root", { message: error.message || "Error al procesar la compra" });
     }
   };
 
