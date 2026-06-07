@@ -7,7 +7,7 @@ import {
 
 const router = Router();
 
-router.post('/users/:user_id/classes/:class_id', verifyToken, assignUserToClass);
+router.post('/classes/assign/:class_id', verifyToken, assignUserToClass);
 router.delete('/users/:user_id/classes/:class_id/delete', verifyToken, removeUserFromClass);
 
 export default router;

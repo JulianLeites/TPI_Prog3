@@ -7,8 +7,10 @@ import ModalRegister from '../UI/ModalRegister';
 import { Accordion, ListGroup,Dropdown, Spinner, Button } from 'react-bootstrap';
 import { SlOptionsVertical } from "react-icons/sl";
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const UserManagement = () => {
+    const { user } = useAuth();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -37,16 +39,19 @@ const UserManagement = () => {
 
     const handleRegisterUser = async (formData) => {
         try {
-            const response = await fetch('http://localhost:3000/users', {
+            const token = localStorage.getItem('token')
+            const response = await fetch('http://localhost:3000/register', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(formData)
             });
 
             if(!response.ok) {
-                throw new Error ('Failed to create user')
+                const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to create user');
             }
 
             const newUser = await response.json()
@@ -57,7 +62,7 @@ const UserManagement = () => {
             console.log("Usuario Creado con exito");
         } catch (error) {
             console.error('Error creating new user', error);
-            alert('No se pudo crear el usuario, intente de nuevo')
+            alert(`No se pudo crear el usuario: ${error.message}`)
         }
     }
 

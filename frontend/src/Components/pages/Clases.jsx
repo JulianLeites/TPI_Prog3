@@ -5,8 +5,11 @@ import NavBar from '../UI/NavBar';
 import ModalClase from '../UI/ModalClase'; // Importamos el modal aparte
 import Footer from '../UI/Footer';
 import ModalDeleteClass from '../UI/ModalDeleteClass';
+import { useAuth } from '../../context/AuthContext';
 
-const Clases = ({ user }) => {
+const Clases = () => {
+    const { user } = useAuth()
+
     const initialStateClass = {
         name: "",
         day: "",
@@ -88,17 +91,20 @@ const Clases = ({ user }) => {
     };
 
     const handleSave = async (formData) => {
-        try {
+        try {   
+            const token = localStorage.getItem('token')
+
             if(classEdit.id){
                 const response = await fetch(`http://localhost:3000/classes/${classEdit.id}`, {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(formData)
                 });
 
-                if(!response) {
+                if(!response.ok) {
                     throw new Error ('Failed to update class');
                 }
 
@@ -109,7 +115,8 @@ const Clases = ({ user }) => {
                 const response = await fetch(`http://localhost:3000/classes`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(formData)
                 })
@@ -138,8 +145,13 @@ const Clases = ({ user }) => {
 
     const handleConfirmDelete = async () => {
         try {
+            const token = localStorage.getItem('token')
+
             const response = await fetch(`http://localhost:3000/classes/${selectedClass}`, {
-                method: "DELETE"
+                method: "DELETE",
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             })
 
             if(!response.ok) {
@@ -157,6 +169,48 @@ const Clases = ({ user }) => {
         setShowDeleteModal(false);
     };
 
+    const handleInscription = async (clase) => {
+        try {
+            const token = localStorage.getItem('token')
+
+            if(!user || !user.id) {
+                throw new Error('You must login to sing up for a class')
+            }
+
+            if(!clase || !clase.id) {
+                throw new Error('Invalid class selected')
+            }
+
+            const response = await fetch(`http://localhost:3000/classes/assign/${clase.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+
+            const resData = await response.json()
+
+            if(!response.ok){
+                throw new Error(resData.message || 'Error procesing class')
+            }
+
+            alert(resData.message)
+
+            setClasses(prevClases =>
+                prevClases.map(c => c.id === clase.id ? {...c, capacity: c.capacity-1} : c)
+            )
+            
+            console.log('Inscripcion exitosa: ', resData.userClass)
+        } catch(error) {
+            throw error
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        console.log('datos recibido en classes: ', clase)
+    } 
+
     if (loading) {
         return(
             <div className='d-flex flex-column justify-content-center align-items-center' style={{ minHeight: "100vh"}}>
@@ -173,10 +227,11 @@ const Clases = ({ user }) => {
                 <Container className="py-5">
                     <div className="d-flex justify-content-between align-items-center mb-5">
                         <h2>Lista de Clases</h2>
-                        
-                            <Button variant="success" onClick={() => handleOpenForm()}>
-                                + Crear clase
-                            </Button>
+                            {(user?.rol === ' admin' || user?.rol === 'superAdmin') && (
+                                <Button variant="success" onClick={() => handleOpenForm()}>
+                                    + Crear clase
+                                </Button>
+                            )}
                         
                     </div>
 
@@ -198,12 +253,11 @@ const Clases = ({ user }) => {
                                         </Card.Text>
 
                                         <div className="mt-auto">
-                                            {/* validar si es Admin */}
-                                                <div className="d-flex gap-2 align-items-center">
+                                            {(user?.rol === 'admin' || user?.rol === 'superAdmin') && (
+                                                <div className="d-flex gap-2 align-items-center justify-content-center mb-2">
                                                     <Button 
-                                                        variant="outline-secondary" 
+                                                        variant="primary" 
                                                         size="sm" 
-                                                        className="flex-grow-1" 
                                                         onClick={() => handleOpenForm(clase)}
                                                     >
                                                         Editar
@@ -216,9 +270,15 @@ const Clases = ({ user }) => {
                                                         Eliminar
                                                     </Button>
                                                 </div>
-                                                <Button variant="primary" className="w-100" disabled={clase.capacity === 0}>
-                                                    Inscribirme
-                                                </Button>
+                                            )}
+                                            <Button 
+                                                variant="success"
+                                                className="w-100"
+                                                disabled={clase.capacity === 0}
+                                                onClick={() => handleInscription(clase)}
+                                            >
+                                                Inscribirme
+                                            </Button>
                                         </div>
                                     </Card.Body>
                                 </Card>
