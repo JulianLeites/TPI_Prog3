@@ -5,8 +5,8 @@ import { Class } from '../models/Classes.js';
 import { Membership } from '../models/membership.js';
 
 export const assignUserToClass = async (req, res) => {
-    const { user_id, class_id } = req.params;
-    const userId = parseInt(user_id);
+    const { class_id } = req.params;
+    const userId = req.user.id;
     const classId = parseInt(class_id);
 
     try {
@@ -36,6 +36,8 @@ export const assignUserToClass = async (req, res) => {
         }
 
         const newUserClass = await User_Class.create({ user_id: userId, class_id: classId });
+
+        await gymClass.decrement('capacity', { by: 1})
         return res.status(201).json({ message: 'Class assigned to user successfully', userClass: newUserClass });
     } catch (error) {
         res.status(500).json({ message: 'Error associating user with class', error });
@@ -52,7 +54,14 @@ export const removeUserFromClass = async (req, res) => {
         if (!userClass) {
             return res.status(404).json({ message: 'User is not assigned to this class' });
         }
+
+        const gymClass = await Class.findByPk(classId)
+
         await userClass.destroy();
+
+        if(gymClass){
+            await gymClass.increment('capacity', {by:1})
+        }
         return res.status(200).json({ message: 'Class removed from user successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Error removing class from user', error });

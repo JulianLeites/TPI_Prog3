@@ -14,7 +14,6 @@ import ProtectedRoutes from "./routes/protectedRoutes.jsx"
 function App() {
   return (
       <Routes>
-        {/* Se pasa setUser para que el Login pueda cambiar el estado luego */}
         <Route path="/" element={<Dashboard/>}/>
         <Route path="/contacto" element={<Contacto/>} />
 

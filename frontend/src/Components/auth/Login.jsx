@@ -78,21 +78,28 @@ const Login = ({show, onHide}) => {
 
   const onRegisterSubmit = async (data) => {
     try {
+      const {name, surname, ...restOfData} = data
+
+      const dataForBackend = {
+        ...restOfData,
+        name: `${name} ${surname}`
+      }
+
       const response = await fetch('http://localhost:3000/register', {
         method: 'POST',
         headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(dataForBackend),
       })
 
       const resData = await response.json();
 
-      if(!resData){
+      if(!response.ok){
         throw new Error(resData.error || 'Error al registrar usuario')
       }
 
-      setIsLoginMode(false)
+      setIsLoginMode(true)
     } catch(error) {
       console.error('Error Register: ', error)
     }

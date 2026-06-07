@@ -13,7 +13,6 @@ import { useAuth } from "../../context/AuthContext";
 
 function Membership() {
   const { user, loading: authLoading } = useAuth()
-  console.log("Estado actual en Membership -> Autenticando:", authLoading, "| Usuario:", user);
 
   const initialStateMembership = {
     name: '',
@@ -208,14 +207,16 @@ function Membership() {
       <div style={{ minHeight: "70vh"}}>
         <div className="d-flex justify-content-between align-items-center m-5">
           <h2 className=" mt-4">Elige tu plan de suscripción</h2>
-          <Button
-            variant="success"
-            size="sm"
-            style={{height:'40px'}}
-            onClick={() => handleOpenForm()}
-          >
-            + Crear Membresia
-          </Button>
+          {(user?.rol === 'admin' || user?.rol === 'superAdmin') && (
+            <Button
+              variant="success"
+              size="sm"
+              style={{height:'40px'}}
+              onClick={() => handleOpenForm()}
+            >
+              + Crear Membresia
+            </Button>
+          )}
         </div>
         <div className="d-flex justify-content-center align-items-center gap-3">
           {memberships.map((memberships) => (
@@ -237,22 +238,24 @@ function Membership() {
                 <Button variant="primary" onClick={() => handleSuscript(memberships)}>
                   Suscribirse
                 </Button> <br/>
-                <div className="mt-2 d-flex justify-content-center align-items-center gap-2">
-                  <Button
-                    variant="danger"
-                    onClick={() => handleOpenDelete(memberships.id)}
-                  >
-                    Borrar
-                  </Button>
-
-                  <Button 
-                    variant='success'
-                    className="p-o text-dark"
-                    onClick={() => handleOpenForm(memberships)}
+                {(user?.rol === 'admin' || user?.rol === 'superAdmin') && (
+                  <div className="mt-2 d-flex justify-content-center align-items-center gap-2">
+                    <Button
+                      variant="danger"
+                      onClick={() => handleOpenDelete(memberships.id)}
                     >
-                    <RiEdit2Line size={24}/>
-                  </Button>
-                </div>
+                      Borrar
+                    </Button>
+
+                    <Button 
+                      variant='success'
+                      className="p-o text-dark"
+                      onClick={() => handleOpenForm(memberships)}
+                    >
+                      Editar  
+                    </Button>
+                  </div>
+                )}
               </Card.Body>
             </Card>
           ))}

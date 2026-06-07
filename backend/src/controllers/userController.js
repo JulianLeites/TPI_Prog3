@@ -36,8 +36,8 @@ export const createUser = async (req, res) => {
             return res.status(400).json({ error: 'Name must be at least 3 characters long' });
         }
 
-        if (username.length < 4) {
-            return res.status(400).json({ error: 'Username must be at least 4 characters long' });
+        if (username.length < 3) {
+            return res.status(400).json({ error: 'Username must be at least 3 characters long' });
         }
 
         if (password.length < 8) {
