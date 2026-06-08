@@ -155,6 +155,11 @@ const UserManagement = () => {
     }
 
     const handleDemoteUser = async (user, newRol) => {
+        if(user.rol === 'superAdmin' && users.filter(u => u.rol === 'superAdmin').length <= 1) {
+            alert("No se puede degradar el último SuperAdmin");
+            return;
+        }
+
         const successful = await updateUserRol(user.id, newRol)
 
         if (successful){

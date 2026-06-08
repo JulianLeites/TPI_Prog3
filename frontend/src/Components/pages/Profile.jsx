@@ -262,7 +262,7 @@ const Profile = () => {
 
     const handleDeleteUser = () => {
         if(profileData.rol === 'superAdmin') {
-            alert("No se puede eliminar el último SuperAdmin");
+            alert("Un superAdmin solo se puede eliminar desde la gestion de usuarios");
             return;
         }   
         setShowDeleteModal(true);
