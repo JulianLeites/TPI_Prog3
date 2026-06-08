@@ -2,14 +2,16 @@ import express from 'express';
 import cors from 'cors';
 import { sequelize } from './db.js';
 import { PORT } from './config.js';
+
 import userRoutes from './routes/users.routes.js';
 import classRoutes from './routes/classes.routes.js';
 import membershipRoutes from './routes/membership.routes.js';
-import userMembershipRoutes from './routes/userMembership.routes.js';
+import userMembershipRoutes from './routes/userMembership.routes.js'
 import userClassRoutes from './routes/userClass.routes.js';
-import './jobs/membershipExpiration.js';
 
+import './jobs/membershipExpiration.js';
 import './models/Associations.js';
+
 import { User } from './models/users.js';
 import { Class } from './models/Classes.js';
 import { Membership } from './models/membership.js';
@@ -24,11 +26,12 @@ app.get('/', (req, res) => {
     res.send('Welcome to the Gym Management System API');
 });
 
-app.use(userRoutes);
 app.use(membershipRoutes);
 app.use(classRoutes);
-app.use(userMembershipRoutes);
-app.use(userClassRoutes);
+
+app.use('/profile', userMembershipRoutes);
+app.use('/profile', userClassRoutes);
+app.use('/profile', userRoutes);
 
 async function main() {
     try {

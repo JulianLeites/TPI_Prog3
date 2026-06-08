@@ -7,6 +7,7 @@ import ModalRegister from '../UI/ModalRegister';
 import { Accordion, ListGroup,Dropdown, Spinner, Button } from 'react-bootstrap';
 import { SlOptionsVertical } from "react-icons/sl";
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const UserManagement = () => {
@@ -15,14 +16,22 @@ const UserManagement = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const navigate = useNavigate()
+
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
 
     useEffect(() => {
         const fetchUsers = async () => {
+            const token = localStorage.getItem('token')
             try {
-                const response = await fetch('http://localhost:3000/users');
+                const response = await fetch('http://localhost:3000/profile/users', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 if (!response.ok) {
                     throw new Error('Failed to fetch users');
                 }
@@ -40,7 +49,7 @@ const UserManagement = () => {
     const handleRegisterUser = async (formData) => {
         try {
             const token = localStorage.getItem('token')
-            const response = await fetch('http://localhost:3000/register', {
+            const response = await fetch('http://localhost:3000/profile/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -67,14 +76,17 @@ const UserManagement = () => {
     }
 
     const confirmElimination = async (data) => {
+        const token = localStorage.getItem('token')
+
         if (data.confirmation === "ELIMINAR") {
             console.log(`Usuario con ID ${selectedUser.id} eliminado`);
             setShowDeleteModal(false);
             try {
-                const response = await fetch(`http://localhost:3000/users/${selectedUser.id}`,{
+                const response = await fetch(`http://localhost:3000/profile/users/${selectedUser.id}`,{
                     method: "DELETE",
                     headers : {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     }
                 })
 
@@ -97,7 +109,7 @@ const UserManagement = () => {
         e.preventDefault();
         e.stopPropagation();
 
-        if(user.rol === 'SuperAdmin' && users.filter(u => u.rol === 'SuperAdmin').length <= 1) {
+        if(user.rol === 'superAdmin' && users.filter(u => u.rol === 'superAdmin').length <= 1) {
             alert("No se puede eliminar el último SuperAdmin");
             return;
         } else{
@@ -107,11 +119,13 @@ const UserManagement = () => {
     }
 
     const updateUserRol = async (userId, newRol) => {
+        const token = localStorage.getItem('token')
         try {
-            const response = await fetch(`http://localhost:3000/users/${userId}`, {
+            const response = await fetch(`http://localhost:3000/profile/users/${userId}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({rol: newRol})
             })
@@ -199,6 +213,9 @@ const UserManagement = () => {
                                                     <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>
                                                         Eliminar
                                                     </Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => navigate(`/profile/${user.id}`)}>
+                                                        Ver Perfil
+                                                    </Dropdown.Item>
                                                 </Dropdown.Menu>
                                             </Dropdown>
                                         </ListGroup.Item>
@@ -227,6 +244,9 @@ const UserManagement = () => {
                                                     <Dropdown.Item onClick={() => handleDemoteUser(user, 'teacher')}>Degradar a Teacher</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handleDemoteUser(user, 'user')}>Degradar a User</Dropdown.Item>
                                                     <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>Eliminar</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => navigate(`/profile/${user.id}`)}>
+                                                        Ver Perfil
+                                                    </Dropdown.Item>
                                                 </Dropdown.Menu>
                                             </Dropdown>
                                         </ListGroup.Item>
@@ -257,6 +277,9 @@ const UserManagement = () => {
                                                     <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>
                                                         Eliminar
                                                     </Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => navigate(`/profile/${user.id}`)}>
+                                                        Ver Perfil
+                                                    </Dropdown.Item>
                                                 </Dropdown.Menu>
                                             </Dropdown>
                                         </ListGroup.Item>
@@ -285,6 +308,9 @@ const UserManagement = () => {
                                                     <Dropdown.Item onClick={() => handlePromoteUser(user, 'admin')}>Ascender a Admin</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handlePromoteUser(user, 'teacher')}>Ascender a Teacher</Dropdown.Item>
                                                     <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>Eliminar</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => navigate(`/profile/${user.id}`)}>
+                                                        Ver Perfil
+                                                    </Dropdown.Item>
                                                 </Dropdown.Menu>
                                             </Dropdown>
                                         </ListGroup.Item>

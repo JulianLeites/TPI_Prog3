@@ -50,7 +50,7 @@ const Login = ({show, onHide}) => {
 
   const onLoginSubmit = async (data) => {
     try {
-      const response = await fetch('http://localhost:3000/login', {
+      const response = await fetch('http://localhost:3000/profile/login', {
         method: 'POST',
         headers: {
         'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ const Login = ({show, onHide}) => {
         name: `${name} ${surname}`
       }
 
-      const response = await fetch('http://localhost:3000/register', {
+      const response = await fetch('http://localhost:3000/profile/register', {
         method: 'POST',
         headers: {
         'Content-Type': 'application/json',

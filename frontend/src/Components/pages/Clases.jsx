@@ -2,7 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Badge, Spinner } from 'react-bootstrap';
 import NavBar from '../UI/NavBar';
-import ModalClase from '../UI/ModalClase'; // Importamos el modal aparte
+import ModalClase from '../UI/ModalClase';
 import Footer from '../UI/Footer';
 import ModalDeleteClass from '../UI/ModalDeleteClass';
 import { useAuth } from '../../context/AuthContext';
@@ -54,7 +54,15 @@ const Clases = () => {
     useEffect (() => {
         const fetchTeachers = async () => {
             try {
-                const response = await fetch ('http://localhost:3000/users')
+                const token = localStorage.getItem('token')
+
+                const response = await fetch ('http://localhost:3000/profile/users', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
                 if (!response.ok){
                     throw new Error ('Error al obtener usuarios')
                 }
@@ -181,7 +189,7 @@ const Clases = () => {
                 throw new Error('Invalid class selected')
             }
 
-            const response = await fetch(`http://localhost:3000/classes/assign/${clase.id}`, {
+            const response = await fetch(`http://localhost:3000/profile/classes/assign/${clase.id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -227,7 +235,7 @@ const Clases = () => {
                 <Container className="py-5">
                     <div className="d-flex justify-content-between align-items-center mb-5">
                         <h2>Lista de Clases</h2>
-                            {(user?.rol === ' admin' || user?.rol === 'superAdmin') && (
+                            {(user?.rol === 'admin' || user?.rol === 'superAdmin') && (
                                 <Button variant="success" onClick={() => handleOpenForm()}>
                                     + Crear clase
                                 </Button>

@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
             }
 
             try {
-                const response = await fetch('http://localhost:3000/verify', {
+                const response = await fetch('http://localhost:3000/profile/verify', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`

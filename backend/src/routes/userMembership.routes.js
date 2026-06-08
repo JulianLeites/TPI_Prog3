@@ -3,14 +3,19 @@ import { verifyToken } from '../middlewares/verifyToken.js';
 import { 
     assignMembershipToUser,
     cancelMembership,
-    getUserActiveMembership
+    getUserActiveMembership,
+    adminCancelUserMembership
 } from '../controllers/userMembershipController.js';
 
+console.log('se esat ejecutando')
 const router = Router();
 
+router.put('/memberships/cancel', verifyToken, cancelMembership);
+router.put('/memberships/cancel/:userId', verifyToken, adminCancelUserMembership);
 router.post('/memberships/assign/:membership_id', verifyToken, assignMembershipToUser);
-router.put('/profile/memberships', verifyToken, cancelMembership);
 
-router.get('/profile/membership', verifyToken, getUserActiveMembership)
+router.get('/memberships', verifyToken, getUserActiveMembership)
+router.get('/memberships/user/:id', verifyToken, getUserActiveMembership)
+
 
 export default router;

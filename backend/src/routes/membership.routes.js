@@ -10,8 +10,9 @@ import {
 const router = Router();
 
 router.get('/memberships', getAllMemberships);
-router.get('/memberships/:id', verifyToken, getMembershipById);
 router.post('/memberships', verifyToken, createMembership);
+
+router.get('/memberships/:id', verifyToken, getMembershipById);
 router.put('/memberships/:id', verifyToken, updateMembership);
 router.delete('/memberships/:id', verifyToken, deleteMembership);
 
