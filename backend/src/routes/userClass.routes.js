@@ -2,12 +2,15 @@ import { Router } from 'express';
 import { verifyToken } from '../middlewares/verifyToken.js';
 import {
     assignUserToClass,
-    removeUserFromClass
+    removeUserFromClass,
+    getUserEnrolledClasses
 } from '../controllers/userClassController.js';
 
 const router = Router();
 
 router.post('/classes/assign/:class_id', verifyToken, assignUserToClass);
-router.delete('/users/:user_id/classes/:class_id/delete', verifyToken, removeUserFromClass);
+router.delete('/profile/classes/:class_id', verifyToken, removeUserFromClass);
+
+router.get('/profile/classes', verifyToken, getUserEnrolledClasses)
 
 export default router;

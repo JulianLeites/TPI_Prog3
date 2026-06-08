@@ -2,12 +2,15 @@ import { Router } from 'express';
 import { verifyToken } from '../middlewares/verifyToken.js';
 import { 
     assignMembershipToUser,
-    cancelMembership
+    cancelMembership,
+    getUserActiveMembership
 } from '../controllers/userMembershipController.js';
 
 const router = Router();
 
 router.post('/memberships/assign/:membership_id', verifyToken, assignMembershipToUser);
-router.put('/users/:user_id/memberships/cancel', verifyToken, cancelMembership);
+router.put('/profile/memberships', verifyToken, cancelMembership);
+
+router.get('/profile/membership', verifyToken, getUserActiveMembership)
 
 export default router;

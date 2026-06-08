@@ -51,12 +51,12 @@ export const assignMembershipToUser = async (req, res) => {
 };
 
 export const cancelMembership = async (req, res) => {
-    const { user_id } = req.params;
+    const userId = req.user.id
 
     try {
         const userMembership = await User_Membership.findOne({ 
             where: { 
-                user_id: user_id,
+                user_id: userId,
                 active: true,
                 date_end: {
                     [Op.gt]: new Date()
@@ -66,7 +66,7 @@ export const cancelMembership = async (req, res) => {
         
         const pendingMembership = await User_Membership.findOne({
             where: {
-                user_id: user_id,
+                user_id: userId,
                 date_start: { [Op.gt]: new Date() } 
             } 
         });
@@ -97,3 +97,36 @@ export const cancelMembership = async (req, res) => {
         res.status(500).json({ message: 'Error cancelling membership', error });
     }
 };
+
+export const getUserActiveMembership = async (req, res) => {
+    const userId = req.user.id
+
+    try {
+        const activeMembership = await User_Membership.findAll({
+            where: {
+                user_id: userId,
+                [Op.or]: [
+                    { active: true },
+                    { date_start: {[Op.gt]: new Date()}}
+                ]
+            },
+            attributes: ['active', 'date_start', 'date_end', 'automatic_renewal'],
+            include: [
+                {
+                    model: Membership,
+                    attributes: ['id', 'name', 'price', 'imageUrl']
+                }
+            ],
+            order:[['date_start', 'ASC']]
+        })
+
+        if(!activeMembership) {
+            return res.json({ message: 'No posee una membresia activa', plan:null})
+        }
+
+        res.json(activeMembership)
+    } catch(error){
+        console.error('Error at getUSerActiveMembership: ', error)
+        res.status(500).json({ error: 'failed  to retrieve membership data'})
+    }
+}

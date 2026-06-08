@@ -4,10 +4,13 @@ import Footer from '../UI/Footer.jsx';
 import { Container, Row, Col, Button, Card } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Login from '../auth/Login.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation()
+
+  const { isAuthenticated } = useAuth()
 
   const [showLoginModal, setShowLoginModal] = useState(false)
 
@@ -64,7 +67,6 @@ const Dashboard = () => {
 
         <Container className="pb-5">
           <Row className="justify-content-center mb-5">
-            {/* Agregamos text-center para centrar los textos y reducimos el ancho máximo a md={10} para que los párrafos no queden tan largos de lado a lado */}
             <Col md={10} className="text-center">
               <h2 className="fw-bold mb-4 text-dark">Sobre nuestra plataforma</h2>
               <p className="text-muted fs-5 mb-4">
@@ -73,9 +75,11 @@ const Dashboard = () => {
               <p className="text-muted fs-5">
                 Si sos administrador, la plataforma te ofrece un panel integral para dar de alta nuevas actividades, modificar horarios y gestionar las capacidades máximas del establecimiento de manera ágil y centralizada.
               </p>
-              <Button variant="link" className="text-decoration-none mt-2" onClick={() => setShowLoginModal(true)}>
-                ¿Ya tenés cuenta? Iniciá sesión acá
-              </Button>
+              {!isAuthenticated && (
+                <Button variant="link" className="text-decoration-none mt-2" onClick={() => setShowLoginModal(true)}>
+                  ¿Ya tenés cuenta? Iniciá sesión acá
+                </Button>
+              )}
             </Col>
           </Row>
 
