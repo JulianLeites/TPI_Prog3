@@ -7,14 +7,6 @@ import { z } from "zod";
 const ModalEliminateUser = ({ show, onHide, user, onConfirmElimination }) => {
     const { register, handleSubmit, formState: { errors } } = useForm();
 
-    // const confirmElimination = (data) => {
-    //     if (data.confirmation === "ELIMINAR") {
-    //         console.log(`Usuario con ID ${user.id} eliminado`);
-    //         onHide();
-    //         // Aquí iría la lógica para eliminar al usuario, como una llamada a la API
-    //     }
-    // };
-
     return (
         <div
             className="modal show"
@@ -44,7 +36,7 @@ const ModalEliminateUser = ({ show, onHide, user, onConfirmElimination }) => {
 
         <Modal.Footer>
           <Button variant="secondary" onClick={onHide}>
-            Close
+            Cancelar
           </Button>
           <Button variant="danger" type="submit" form="eliminateUser" onClick={() => {}}>
             Eliminar Usuario

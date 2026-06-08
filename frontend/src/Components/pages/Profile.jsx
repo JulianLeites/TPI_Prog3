@@ -8,11 +8,15 @@ import DefaultImage from '../../assets/img/MembershipDefaultImage.jpg'
 import ModalCancelMembership from '../UI/ModalCancelMembership';
 import ModalLeaveClass from '../UI/ModalLeaveClass';
 import ModalEditProfile from '../UI/ModalEditProfile';
+import ModalEliminateUser from '../UI/ModalEliminateUser';
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
     const { id } = useParams()
+
+    const navigate = useNavigate()
 
     const [profileData, setProfileData] = useState(null)
     const [membershipData, setMembershipData] = useState(null)
@@ -23,11 +27,12 @@ const Profile = () => {
     const [showCancelModal, setShowCancelModal] = useState(false)
     const [showleaveClassModal, setShowLeaveClassModal] = useState(false)
     const [showEditProfile, setShowEditProfile] = useState(false)
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
 
     const [selectedClass, setSelectedClass] = useState(null)
     const [profileEdit, setProfileEdit] = useState(null)
 
-    const { user: currentUser, updateUserContext } = useAuth()
+    const { user: currentUser, updateUserContext, logout } = useAuth()
 
     const isViewingOther = Boolean(id) && String(id) !== String(currentUser?.id || currentUser?._id)
 
@@ -219,6 +224,50 @@ const Profile = () => {
         }
     }
 
+    const confirmElimination = async (data) => {
+        const token = localStorage.getItem('token')
+
+        if (data.confirmation === "ELIMINAR") {
+            setShowDeleteModal(false);
+
+            const userToDelete = isViewingOther ? id : (currentUser?.id || currentUser?._id)
+            try {
+                const response = await fetch(`http://localhost:3000/profile/users/${userToDelete}`,{
+                    method: "DELETE",
+                    headers : {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+
+                if(!response.ok) {
+                    throw new Error ('Failed to delete user');
+                }
+
+                if(!isViewingOther){
+                    alert('Tu cuenta ha sido eliminada correctamente')
+                    logout()
+                    navigate('/')
+                } else {
+                    alert('Usuario eliminado con exito')
+                    navigate('/user-management')
+                }
+
+            } catch (error) {
+                console.error('Failure deleting de use', error)
+                alert("No se pudo eliminar el usuario, intente de nuevo")
+            }
+        }
+    };
+
+    const handleDeleteUser = () => {
+        if(profileData.rol === 'superAdmin') {
+            alert("No se puede eliminar el último SuperAdmin");
+            return;
+        }   
+        setShowDeleteModal(true);
+    }
+
     if (loading) {
         return(
             <div className='d-flex flex-column justify-content-center align-items-center' style={{ minHeight: "100vh"}}>
@@ -249,6 +298,15 @@ const Profile = () => {
                                 Editar Perfil
                             </Button>
                         )}
+                        <Button
+                            variant="outline-danger" 
+                            size="sm" 
+                            className="w-100 fw-bold mt-2"
+                            onClick={handleDeleteUser}
+                        >
+                            
+                            Eliminar Cuenta
+                        </Button>
                     </div>
                 </Col>
                 
@@ -271,6 +329,13 @@ const Profile = () => {
                                 <h5 className="border-bottom pb-2 mb-3 text-danger text-uppercase" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>Información de Administrador</h5>
                                 <p className="mb-2 text-monospace"><strong>ID de Usuario:</strong> <br />{profileData?.id}</p>
                                 <p className="mb-0"><strong>Rol asignado:</strong> <br /><span className="badge bg-danger text-white mt-1 px-3 py-2">{profileData?.rol}</span></p>
+                                <Button
+                                    variant="outline-danger" 
+                                    size="sm" 
+                                    className="w-100 fw-bold mt-2"
+                                >
+                                    Editar Rol
+                                </Button>
                             </Card.Body>
                         </Card>
                     </Col>
@@ -443,6 +508,13 @@ const Profile = () => {
             onHide={() => setShowEditProfile(false)}
             profileEdit={profileEdit}
             onEdit={handleEditProfile}
+        />
+
+        <ModalEliminateUser 
+            show={showDeleteModal}
+            onHide={() => setShowDeleteModal(false)}
+            onConfirmElimination={confirmElimination}
+            username={profileData?.username}
         />
 
       <Footer/>
