@@ -96,7 +96,13 @@ export const loginUser = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-    const id = req.user.id
+    const { id } = req.params
+    const currentUser = req.user
+
+    if(currentUser.rol !== 'admin' && currentUser.rol !== 'superAdmin'){
+        return res.status(403).json({ error: 'No tienes permisos para realizar esta accion'})
+    }
+
     const { name, username, password, email, rol } = req.body;
     try {
         const user = await User.findByPk(id);
