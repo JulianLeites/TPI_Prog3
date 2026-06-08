@@ -45,9 +45,13 @@ export const assignUserToClass = async (req, res) => {
 };
 
 export const removeUserFromClass = async (req, res) => {
-    const { user_id, class_id } = req.params;
-    const userId = parseInt(user_id);
+    const { class_id } = req.params
+    const userId = req.user.id
     const classId = parseInt(class_id);
+
+    if(isNaN(classId)) {
+        return res.status(400).json({ message: 'Invalid class Id'})
+    }
 
     try {
         const userClass = await User_Class.findOne({ where: { user_id: userId, class_id: classId } });
@@ -67,3 +71,39 @@ export const removeUserFromClass = async (req, res) => {
         res.status(500).json({ message: 'Error removing class from user', error });
     }
 };
+
+export const getUserEnrolledClasses = async (req, res) => {
+    const userId = req.user.id
+
+    try {
+        const enrollments = await User_Class.findAll({
+            where: {user_id: userId},
+            attributes: ['id', 'class_id', 'enrollment_date']
+        })
+
+        if(!enrollments || enrollments.length === 0) {
+            return res.json([])
+        }
+
+        const classIds = enrollments.map(e => e.class_id)
+
+        const classesData = await Class.findAll({
+            where: {id: classIds},
+            attributes: ['id', 'name', 'day', 'hour']
+        })
+
+        const response = enrollments.map(enrollment => {
+            const clasInfo = classesData.find(c => c.id === enrollment.class_id)
+            return {
+                id: enrollment.id,
+                enrollment_date: enrollment.enrollment_date,
+                Class: clasInfo || null
+            }
+        })
+
+        res.json(response)
+    }catch(error) {
+        console.error('Error at getUserEnrolledClasses: ', error)
+        res.status(500).json({ error: 'Failed to retreive enrolled classes'})
+    }
+}

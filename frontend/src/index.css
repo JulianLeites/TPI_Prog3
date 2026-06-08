@@ -74,3 +74,9 @@
 .user-list-item:last-child {
     border-bottom: none;
 }
+
+.custom-carousel .carousel-control-prev-icon,
+.custom-carousel .carousel-control-next-icon {
+    filter: invert(1);
+}
+

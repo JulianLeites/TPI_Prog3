@@ -6,7 +6,8 @@ import {
     createUser,
     updateUser,
     deleteUser,
-    loginUser
+    loginUser,
+    getUserProfile
 } from '../controllers/userController.js';
 
 const router = Router();
@@ -24,7 +25,9 @@ router.get('/verify', verifyToken, (req, res) => {
     })
 })
 
-router.put('/users/:id', verifyToken, updateUser);
+router.get('/profile', verifyToken, getUserProfile)
+
+router.put('/profile', verifyToken, updateUser);
 router.delete('/users/:id', verifyToken, deleteUser);
 
 export default router;

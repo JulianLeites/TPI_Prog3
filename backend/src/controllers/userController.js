@@ -96,13 +96,13 @@ export const loginUser = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-    const { id } = req.params;
+    const id = req.user.id
     const { name, username, password, email, rol } = req.body;
     try {
         const user = await User.findByPk(id);
 
         if(!user) {
-            return res.status(400).json({ error: 'User Not Found' })
+            return res.status(404).json({ error: 'User Not Found' })
         }
 
         if (name && name.length < 3) {
@@ -110,8 +110,8 @@ export const updateUser = async (req, res) => {
         }
 
         if (username){
-            if(username.length < 4) {
-                return res.status(400).json({error: 'Username must be atleast 4 characters long'});
+            if(username.length < 3) {
+                return res.status(400).json({error: 'Username must be atleast 3 characters long'});
             }
             const existingUser = await User.findOne({ where: { username } });
             if (existingUser && existingUser.id !== parseInt(id)) {
@@ -119,8 +119,14 @@ export const updateUser = async (req, res) => {
             }
         }
 
-        if (password && password.length < 8) {
-            return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+        if(password && password.trim() !== ''){
+            if(password.length < 8) {
+                return res.status(400).json({ error: 'Password must be at least 8 characters long'})
+            }
+
+            const saltRound = 10;
+            const salt = await bcrypt.genSalt(saltRound)
+            user.password = await bcrypt.hash(password, salt)
         }
 
         if(email) {
@@ -140,7 +146,16 @@ export const updateUser = async (req, res) => {
         user.email = email || user.email;
         user.rol = rol || user.rol;
         await user.save();
-        res.json(user);
+
+        const updatedUser = {
+            id: user.id,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            rol: user.rol,
+            created_at: user.created_at
+        }
+        res.json(updatedUser);
         
     } catch (error) {
         console.error("Backend Error: ", error);
@@ -162,3 +177,22 @@ export const deleteUser = async (req, res) => {
         res.status(500).json({ error: 'Failed to delete user' });
     }
 };
+
+export const getUserProfile = async (req, res) => {
+    const userId = req.user.id
+
+    try{
+        const userProfile = await User.findByPk(userId, {
+            attributes: ['id', 'name', 'username', 'email', 'rol', 'created_at']
+        })
+
+        if(!userProfile) {
+            return res.status(404).json({ error:'User profile not found '})
+        }
+
+        res.json(userProfile)
+    } catch(error) {
+        console.error('Error en getUserProfile: ', error)
+        res.status(500).json({ error: 'failed to retrieve profile data'})
+    }
+}
