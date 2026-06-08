@@ -130,7 +130,7 @@ const UserManagement = () => {
                 body: JSON.stringify({rol: newRol})
             })
             const comfirmation = await response.json()
-            if (!comfirmation) {
+            if (!response.ok) {
                 throw new Error('Failed to update user rol');
             }
             return true;
@@ -215,6 +215,7 @@ const UserManagement = () => {
                                                     <Dropdown.Item onClick={() => handleDemoteUser(user, 'admin')}>Degradar a Admin</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handleDemoteUser(user, 'teacher')}>Degradar a Teacher</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handleDemoteUser(user, 'user')}>Degradar a User</Dropdown.Item>
+                                                    <Dropdown.Divider/>
                                                     <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>
                                                         Eliminar
                                                     </Dropdown.Item>
@@ -248,6 +249,7 @@ const UserManagement = () => {
                                                     <Dropdown.Item onClick={() => handlePromoteUser(user, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handleDemoteUser(user, 'teacher')}>Degradar a Teacher</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handleDemoteUser(user, 'user')}>Degradar a User</Dropdown.Item>
+                                                    <Dropdown.Divider/>
                                                     <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>Eliminar</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => navigate(`/profile/${user.id}`)}>
                                                         Ver Perfil
@@ -279,6 +281,7 @@ const UserManagement = () => {
                                                     <Dropdown.Item onClick={() => handlePromoteUser(user, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handlePromoteUser(user, 'admin')}>Ascender a Admin</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handleDemoteUser(user, 'user')}>Degradar a User</Dropdown.Item>
+                                                    <Dropdown.Divider/>
                                                     <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>
                                                         Eliminar
                                                     </Dropdown.Item>
@@ -312,6 +315,7 @@ const UserManagement = () => {
                                                     <Dropdown.Item onClick={() => handlePromoteUser(user, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handlePromoteUser(user, 'admin')}>Ascender a Admin</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => handlePromoteUser(user, 'teacher')}>Ascender a Teacher</Dropdown.Item>
+                                                    <Dropdown.Divider/>
                                                     <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>Eliminar</Dropdown.Item>
                                                     <Dropdown.Item onClick={() => navigate(`/profile/${user.id}`)}>
                                                         Ver Perfil

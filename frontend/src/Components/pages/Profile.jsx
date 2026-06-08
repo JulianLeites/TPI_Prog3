@@ -1,5 +1,5 @@
 import React from 'react'
-import {Container, Row, Col, Spinner, Button, Card, Badge, Carousel } from 'react-bootstrap'
+import {Container, Row, Col, Spinner, Button, Card, Badge, Carousel, Dropdown } from 'react-bootstrap'
 import NavBar from '../UI/NavBar'
 import Footer from '../UI/Footer'
 import { FaRegUserCircle } from "react-icons/fa";
@@ -260,12 +260,56 @@ const Profile = () => {
         }
     };
 
+    const updateUserRol = async (userId, newRol) => {
+        const token = localStorage.getItem('token')
+        try {
+            const response = await fetch(`http://localhost:3000/profile/users/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({rol: newRol})
+            })
+            const comfirmation = await response.json()
+            if (!response.ok) {
+                throw new Error('Failed to update user rol');
+            }
+            return true;
+
+        } catch (error) {
+            console.error("fail updating user rol ", error )
+        }
+    }
+
     const handleDeleteUser = () => {
         if(profileData.rol === 'superAdmin') {
             alert("Un superAdmin solo se puede eliminar desde la gestion de usuarios");
             return;
         }   
         setShowDeleteModal(true);
+    }
+
+    const handleDemoteUser = async (user, newRol) => {
+        if(user.rol === 'superAdmin') {
+            alert("Acceda a la gestion de usuarios para gestion un superAdmin");
+            return;
+        }
+
+        const successful = await updateUserRol(user.id, newRol)
+
+        if (successful){
+            console.log(`Usuario con ID ${user.id} degradado a ${newRol}`);
+            setProfileData(prev => ({ ...prev, rol: newRol}))
+        }
+    }
+
+    const handlePromoteUser = async (user, newRol) => {
+        const successful = await updateUserRol(user.id, newRol)
+        if (successful){   
+            console.log(`Usuario con ID ${user.id} ascendido a ${newRol}`);
+            setProfileData(prev => ({ ...prev, rol: newRol}))   
+        }
     }
 
     if (loading) {
@@ -329,13 +373,48 @@ const Profile = () => {
                                 <h5 className="border-bottom pb-2 mb-3 text-danger text-uppercase" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>Información de Administrador</h5>
                                 <p className="mb-2 text-monospace"><strong>ID de Usuario:</strong> <br />{profileData?.id}</p>
                                 <p className="mb-0"><strong>Rol asignado:</strong> <br /><span className="badge bg-danger text-white mt-1 px-3 py-2">{profileData?.rol}</span></p>
-                                <Button
-                                    variant="outline-danger" 
-                                    size="sm" 
-                                    className="w-100 fw-bold mt-2"
-                                >
-                                    Editar Rol
-                                </Button>
+                                
+                                <Dropdown drop='bottom'>
+                                    <Dropdown.Toggle
+                                        as={Button}
+                                        variant='outline-danger'
+                                        className='drop-down-no-caret w-100 fw-bold mt-2 text-wrap small'
+                                    >
+                                        Editar Rol
+                                    </Dropdown.Toggle>
+
+                                    <Dropdown.Menu>
+                                        {profileData?.rol === 'user' && (
+                                            <>
+                                                <Dropdown.Item onClick={() => handlePromoteUser(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => handlePromoteUser(profileData, 'admin')}>Ascender a Admin</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => handlePromoteUser(profileData, 'teacher')}>Ascender a Teacher</Dropdown.Item>
+                                            </>
+                                        )}
+
+                                        {profileData?.rol === 'teacher' && (
+                                            <>
+                                                <Dropdown.Item onClick={() => handlePromoteUser(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => handlePromoteUser(profileData, 'admin')}>Ascender a Admin</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => handleDemoteUser(profileData, 'user')}>Degradar a User</Dropdown.Item>
+                                            </>
+                                        )}
+
+                                        {profileData?.rol === 'admin' && (
+                                            <>
+                                                <Dropdown.Item onClick={() => handlePromoteUser(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => handleDemoteUser(profileData, 'teacher')}>Degradar a Teacher</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => handleDemoteUser(profileData, 'user')}>Degradar a User</Dropdown.Item>
+                                            </>
+                                        )}
+
+                                        {profileData?.rol === 'superAdmin' && (
+                                            <Dropdown.Item disabled>
+                                                Acceda a gestion de usuarios
+                                            </Dropdown.Item>
+                                        )}
+                                    </Dropdown.Menu>
+                                </Dropdown>
                             </Card.Body>
                         </Card>
                     </Col>
