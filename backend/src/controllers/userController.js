@@ -165,14 +165,21 @@ export const updateUser = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
     const { id } = req.params;
+    const currentUser = req.user;
+
+    if (currentUser.rol !== 'admin' && currentUser.rol !== 'superAdmin' && String(currentUser.id) !== String(id)) {
+        return res.status(403).json({ error: 'No tienes permisos para eliminar este perfil.' });
+    }
+
     try {
         const user = await User.findByPk(id);
-        if (user) {
-            await user.destroy();
-            res.json({ message: 'User deleted successfully' });
-        } else {
+        if (!user) {
             res.status(404).json({ error: 'User not found' });
         }
+        
+        await user.destroy()
+        return res.json({ message: 'User deleted successfully'})
+
     } catch (error) {
         res.status(500).json({ error: 'Failed to delete user' });
     }
