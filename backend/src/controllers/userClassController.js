@@ -72,8 +72,38 @@ export const removeUserFromClass = async (req, res) => {
     }
 };
 
+export const adminRemoveUserFromClass = async (req, res) => {
+    if (req.user.rol !== 'admin' && req.user.rol !== 'superAdmin') {
+        return res.status(403).json({ message: 'Access denied. Admins only.' });
+    }
+    const { class_id, userId } = req.params
+    const classId = parseInt(class_id);
+
+    if(isNaN(classId)) {
+        return res.status(400).json({ message: 'Invalid class Id'})
+    }
+
+    try {
+        const userClass = await User_Class.findOne({ where: { user_id: userId, class_id: classId } });
+        if (!userClass) {
+            return res.status(404).json({ message: 'User is not assigned to this class' });
+        }
+
+        const gymClass = await Class.findByPk(classId)
+
+        await userClass.destroy();
+
+        if(gymClass){
+            await gymClass.increment('capacity', {by:1})
+        }
+        return res.status(200).json({ message: 'Class removed from user successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error removing class from user', error });
+    }
+}
+
 export const getUserEnrolledClasses = async (req, res) => {
-    const userId = req.user.id
+    const userId = req.params.id ? req.params.id : req.user.id
 
     try {
         const enrollments = await User_Class.findAll({

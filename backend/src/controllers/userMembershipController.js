@@ -98,8 +98,60 @@ export const cancelMembership = async (req, res) => {
     }
 };
 
+export const adminCancelUserMembership = async (req, res) => {
+    if (req.user.rol !== 'admin' && req.user.rol !== 'superAdmin') {
+        return res.status(403).json({ message: 'Access denied. Admins only.' });
+    }
+
+    const { userId } = req.params
+
+    try {
+        const userMembership = await User_Membership.findOne({ 
+            where: { 
+                user_id: userId,
+                active: true,
+                date_end: {
+                    [Op.gt]: new Date()
+                }
+            } 
+        });
+        
+        const pendingMembership = await User_Membership.findOne({
+            where: {
+                user_id: userId,
+                date_start: { [Op.gt]: new Date() } 
+            } 
+        });
+        
+        if (!userMembership && !pendingMembership) {
+            return res.status(404).json({ message: 'User membership not found' });
+        }
+
+        const isActiveCancelled = userMembership ? !userMembership.automatic_renewal : true;
+        const isPendingCancelled = pendingMembership ? !pendingMembership.automatic_renewal : true;
+
+        if (isActiveCancelled && isPendingCancelled) {
+            return res.status(400).json({ message: 'all memberships already cancelled' });
+        }
+
+        if (userMembership && userMembership.automatic_renewal) {
+            userMembership.automatic_renewal = false;
+            await userMembership.save();
+        }
+
+        if (pendingMembership && pendingMembership.automatic_renewal) {
+            pendingMembership.automatic_renewal = false;
+            await pendingMembership.save();
+        }
+
+        res.status(200).json({ message: 'Membership cancellation successful' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error cancelling membership', error });
+    }
+};
+
 export const getUserActiveMembership = async (req, res) => {
-    const userId = req.user.id
+    const userId = req.params.id ? req.params.id : req.user.id
 
     try {
         const activeMembership = await User_Membership.findAll({

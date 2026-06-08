@@ -9,13 +9,15 @@ import ModalCancelMembership from '../UI/ModalCancelMembership';
 import ModalLeaveClass from '../UI/ModalLeaveClass';
 import ModalEditProfile from '../UI/ModalEditProfile';
 import { useAuth } from '../../context/AuthContext';
-import { email } from 'zod';
+import { useParams } from 'react-router-dom';
 
 const Profile = () => {
+    const { id } = useParams()
+
     const [profileData, setProfileData] = useState(null)
     const [membershipData, setMembershipData] = useState(null)
-    const [classesData, setClassesData] = useState(null)
-    const [loading, setLoaging] = useState(true)
+    const [classesData, setClassesData] = useState([])
+    const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
     const [showCancelModal, setShowCancelModal] = useState(false)
@@ -25,14 +27,21 @@ const Profile = () => {
     const [selectedClass, setSelectedClass] = useState(null)
     const [profileEdit, setProfileEdit] = useState(null)
 
-    const { updateUserContext } = useAuth()
+    const { user: currentUser, updateUserContext } = useAuth()
+
+    const isViewingOther = Boolean(id) && String(id) !== String(currentUser?.id || currentUser?._id)
 
     useEffect(() => {
         const fetchProfile = async () => {
+            setLoading(true)
             const token = localStorage.getItem('token')
 
+            const profileUrl = isViewingOther ? `http://localhost:3000/profile/${id}` : 'http://localhost:3000/profile'
+            const membershipUrl = isViewingOther ? `http://localhost:3000/profile/memberships/user/${id}` : 'http://localhost:3000/profile/memberships'
+            const classesUrl = isViewingOther ? `http://localhost:3000/profile/classes/user/${id}` : 'http://localhost:3000/profile/classes'
+
             try{
-                const response = await fetch('http://localhost:3000/profile', {
+                const response = await fetch(profileUrl, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -47,7 +56,7 @@ const Profile = () => {
                 const data = await response.json()
                 setProfileData(data)
 
-                const membershipResponse = await fetch('http://localhost:3000/profile/membership', {
+                const membershipResponse = await fetch(membershipUrl, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -62,7 +71,7 @@ const Profile = () => {
                 const mData = await membershipResponse.json()
                 setMembershipData(mData)
 
-                const classesResponse = await fetch('http://localhost:3000/profile/classes', {
+                const classesResponse = await fetch(classesUrl, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -75,22 +84,32 @@ const Profile = () => {
                 }
 
                 const cData = await classesResponse.json()
-                setClassesData(cData)
+                
+                if(Array.isArray(cData)){
+                    setClassesData(cData)
+                } else if (cData && Array.isArray(cData.classes)) {
+                    setClassesData(cData.classes)
+                } else {
+                    setClassesData([])
+                }
 
             } catch(error) {
                 console.error('Error getting profile: ', error)
                 setError(error.message)
             } finally {
-                setLoaging(false)
+                setLoading(false)
             }
         }
         fetchProfile()
-    }, [])
+    }, [id, isViewingOther])
 
     const handleCancelMembership = async () => {
         const token = localStorage.getItem('token')
+
+        const cancelUrl = isViewingOther ? `http://localhost:3000/profile/memberships/cancel/${id}` : 'http://localhost:3000/profile/memberships/cancel'
+
         try {
-            const response = await fetch('http://localhost:3000/profile/memberships', {
+            const response = await fetch(cancelUrl, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -108,6 +127,10 @@ const Profile = () => {
                 if(Array.isArray(prevData)) {
                     return prevData.map(item => ({...item, automatic_renewal: false}))
                 }
+                if (prevData && typeof prevData === 'object') {
+                    return [{ ...prevData, automatic_renewal: false}]
+                }
+                return prevData
             })
         } catch(error) {
             console.error('Error canceling membership: ', error)
@@ -123,12 +146,13 @@ const Profile = () => {
 
     const handleLeaveClass = async () => {
         if(!selectedClass || !selectedClass.Class) return;
-
+        
         try {
             const token = localStorage.getItem('token')
             const classId = selectedClass.Class.id
+            const leaveClassUrl = isViewingOther ? `http://localhost:3000/profile/classes/${classId}/user/${id}` : `http://localhost:3000/profile/classes/${classId}`
 
-            const response = await fetch(`http://localhost:3000/profile/classes/${classId}`, {
+            const response = await fetch(leaveClassUrl, {
                 method: "DELETE",
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -162,7 +186,9 @@ const Profile = () => {
 
             const { id, rol, created_at, updated_at, ...camposEditables } = formData;
 
-            const response = await fetch(`http://localhost:3000/profile`, {
+            const updateUrl = isViewingOther ? `http://localhost:3000/profile/${id}` : 'http://localhost:3000/profile'
+
+            const response = await fetch(updateUrl, {
                 method: 'PUT',
                 headers: {
                 'Authorization': `Bearer ${token}`,
@@ -179,11 +205,13 @@ const Profile = () => {
 
             setProfileData(prevData => ({...prevData, ...resData}))
 
-            updateUserContext({
-                username: resData.username,
-                name: resData.name,
-                email: resData.email
-            })
+            if(!isViewingOther){
+                updateUserContext({
+                    username: resData.username,
+                    name: resData.name,
+                    email: resData.email
+                })
+            }
 
             setShowEditProfile(false)
         } catch(error){
@@ -200,7 +228,7 @@ const Profile = () => {
         )
     }
 
-    const isAdmin = profileData?.rol === 'admin' || profileData?.rol === 'superAdmin'
+    const isAdmin = currentUser?.rol === 'admin' || currentUser?.rol === 'superAdmin'
     const columnSize = isAdmin ? 3 : 4;
     const isAlreadyCanceled = Array.isArray(membershipData) && membershipData.every(userMem => userMem.automatic_renewal === false)
 
@@ -213,12 +241,14 @@ const Profile = () => {
                 <Col xs={12} md='auto' className='d-flex flex-column align-items-center justify-content-center px-4'>
                     <div className="text-center p-3 h-100 d-flex flex-column justify-content-center align-items-center" style={{ minWidth: '180px' }}>
                         <FaRegUserCircle size={130} className='mb-4'/>
-                        <Button 
-                            variant='success'
-                            onClick={() => handleOpenEditProfile(profileData)}
-                        >
-                            Editar Perfil
-                        </Button>
+                        {!isViewingOther && (
+                            <Button 
+                                variant='success'
+                                onClick={() => handleOpenEditProfile(profileData)}
+                            >
+                                Editar Perfil
+                            </Button>
+                        )}
                     </div>
                 </Col>
                 
@@ -246,14 +276,20 @@ const Profile = () => {
                     </Col>
                 )}
 
-                <Col xs={12} sm={6} md={columnSize} className='d-flex justify-content-center'>
+                <Col xs ={12} sm={6} md={columnSize} className='d-flex justify-content-center'>
                     {(!membershipData || (Array.isArray(membershipData) && membershipData.length === 0) || membershipData?.plan === null) ? (
                         <Card className='shadow-sm border rounded text-center h-100 bg-light w-100 d-flex flex-column justify-content-center p-4'>
                             <Card.Body className="d-flex flex-column justify-content-center align-items-center">
-                                <p>{membershipData.message || 'No posees una membresía activa'}</p>
-                                <Button variant='success' href='/memberships' className="shadow-sm px-4">
-                                    Adquirir Membresía
-                                </Button>
+                                {!isViewingOther ? (
+                                    <p>{membershipData?.message || 'No posees una membresía activa'}</p>
+                                ) : (
+                                    <p className='text-muted italic mb-0 fs-5'>Este usuario no posee membresia</p>
+                                )}
+                                {!isViewingOther && (
+                                    <Button variant='success' href='/memberships' className="shadow-sm px-4">
+                                        Adquirir Membresía
+                                    </Button>
+                                )}
                             </Card.Body>
                         </Card>
                     ) : (
@@ -264,7 +300,7 @@ const Profile = () => {
                                 interval={null}
                                 className='h-100 w-100 custom-carousel'
                             >
-                                {membershipData.map((userMem, index) => {
+                                {Array.isArray(membershipData) && membershipData.map((userMem, index) => {
                                     const isInQueue = new Date(userMem.date_start) > new Date()
 
                                     return(
@@ -327,19 +363,31 @@ const Profile = () => {
             <Row className='mt-5'>
                 <Col xs={12}>
                     <h4 className="mb-4 text-secondary text-uppercase fw-bold" style={{ letterSpacing: '1px' }}>
-                        Mis Clases Activas
+                        {isViewingOther ? (
+                            'Clases Activas'
+                        ) : (
+                            'Mis Clases Activas'
+                        )}
                     </h4>
 
                     {!classesData || classesData.length === 0 ? (
                         <Card className='text-center p-5 bg-light border-0 shadow-sm'>
-                            <p className='text-muted italic mb-0 fs-5'>No estás inscripto a ninguna clase actualmente.</p>
-                            <Button variant='primary' href='/clases' className='mt-3 mx-auto shadow-sm px-4'>
-                                Explorar Grilla de Actividades
-                            </Button>
+                            <p className='text-muted italic mb-0 fs-5'>
+                                {!isViewingOther ? (
+                                    'No estás inscripto a ninguna clase actualmente.'
+                                ) : (
+                                    'Este usuario no esta inscripto en ninguna clase'
+                                )}
+                            </p>
+                            {!isViewingOther && (
+                                <Button variant='primary' href='/clases' className='mt-3 mx-auto shadow-sm px-4'>
+                                    Explorar Grilla de Actividades
+                                </Button>
+                            )}
                         </Card>
                     ) : (
                         <Row className='g-4'>
-                            {classesData.map((enrollment) => (
+                            {classesData?.map((enrollment) => (
                                 <Col key={enrollment.id} xs={12} sm={6} md={4} lg={3}>
                                     <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-white'>
                                         <Card.Body className='d-flex flex-column p-4'>
@@ -363,7 +411,7 @@ const Profile = () => {
                                                     className="w-100 fw-bold"
                                                     onClick={() => handleOpenLeaveClass(enrollment)}
                                                 >
-                                                    Darme de baja
+                                                    Dar de baja
                                                 </Button>
                                             </div>
                                         </Card.Body>

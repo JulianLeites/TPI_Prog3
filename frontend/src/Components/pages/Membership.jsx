@@ -61,7 +61,7 @@ function Membership() {
         throw new Error('Invalid membership selected')
       }
 
-      const response = await fetch(`http://localhost:3000/memberships/assign/${selectedMembership.id}`, {
+      const response = await fetch(`http://localhost:3000/profile/memberships/assign/${selectedMembership.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -103,6 +103,8 @@ function Membership() {
   }
 
   const handleSave = async (formData) => {
+    const token = localStorage.getItem('token')
+
     let finalImageUrl = membershipEdit.imageUrl || null;
     if(formData.imageFile) {
       const cloudinaryData = new FormData();
@@ -130,7 +132,8 @@ function Membership() {
         const response = await fetch(`http://localhost:3000/memberships/${membershipEdit.id}`, {
           method: 'PUT',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(dataToSend)
         });
@@ -146,7 +149,8 @@ function Membership() {
         const response = await fetch('http://localhost:3000/memberships', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(dataToSend)
         });
@@ -172,9 +176,13 @@ function Membership() {
   };
 
   const handleConfirmDelete = async () => {
+    const token = localStorage.getItem('token')
         try {
             const response = await fetch(`http://localhost:3000/memberships/${selectedMembership}`, {
-                method: "DELETE"
+                method: "DELETE",
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
             })
 
             if(!response.ok) {

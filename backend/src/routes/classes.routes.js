@@ -11,8 +11,9 @@ import {
 const router = Router();
 
 router.get('/classes', getAllClasses);
-router.get('/classes/:id', verifyToken, getClassById);
 router.post('/classes', verifyToken, createClass);
+
+router.get('/classes/:id', verifyToken, getClassById);
 router.put('/classes/:id', verifyToken, updateClass);
 router.delete('/classes/:id', verifyToken, deleteClass);
 

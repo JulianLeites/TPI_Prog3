@@ -179,7 +179,7 @@ export const deleteUser = async (req, res) => {
 };
 
 export const getUserProfile = async (req, res) => {
-    const userId = req.user.id
+    const userId = req.params.id ? req.params.id : req.user.id
 
     try{
         const userProfile = await User.findByPk(userId, {
