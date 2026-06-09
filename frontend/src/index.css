@@ -63,7 +63,7 @@
     border-Color: black;
     border-left: none;
     border-right: none;
-    background-color: #DEDEDE;
+    /* background-color: #DEDEDE; */
 }
 
 .user-list-item:first-child {

@@ -214,7 +214,7 @@ const UserManagement = () => {
                             { users.filter(user => user.rol === 'superAdmin').length > 0 ? (
                                 <ListGroup>
                                     {users.filter(user => user.rol === 'superAdmin').map(user => (
-                                        <ListGroup.Item key={user.id} className='user-list-item'>
+                                        <ListGroup.Item key={user.id} className='user-list-item bg-light'>
                                             {user.name}
                                             <Dropdown drop="end" style={{ display: 'inline-block' }}>
                                                 <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
@@ -248,7 +248,7 @@ const UserManagement = () => {
                             { users.filter(user => user.rol === 'admin').length > 0 ? (
                                 <ListGroup>
                                     {users.filter(user => user.rol === 'admin').map(user => (
-                                        <ListGroup.Item key={user.id} className='user-list-item'>
+                                        <ListGroup.Item key={user.id} className='user-list-item bg-light'>
                                                 {user.name}
                                                 <Dropdown drop="end" style={{ display: 'inline-block' }}>
                                                 <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
@@ -280,7 +280,7 @@ const UserManagement = () => {
                             { users.filter(user => user.rol === 'teacher').length > 0 ? (
                                 <ListGroup>
                                     {users.filter(user => user.rol === 'teacher').map(user => (
-                                        <ListGroup.Item key={user.id} className='user-list-item'>
+                                        <ListGroup.Item key={user.id} className='user-list-item bg-light'>
                                             {user.name}
                                             <Dropdown drop="end" style={{ display: 'inline-block' }}>
                                                 <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
@@ -314,7 +314,7 @@ const UserManagement = () => {
                             { users.filter(user => user.rol === 'user').length > 0 ? (
                                 <ListGroup>
                                     {users.filter(user => user.rol === 'user').map(user => (
-                                        <ListGroup.Item key={user.id} className='user-list-item'>
+                                        <ListGroup.Item key={user.id} className='user-list-item bg-light'>
                                             {user.name}
                                             <Dropdown drop="end" style={{ display: 'inline-block' }}>
                                                 <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">

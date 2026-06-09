@@ -235,11 +235,9 @@ function Membership() {
         <div className="d-flex justify-content-center align-items-center gap-3">
           {memberships.map((memberships) => (
             <Card
-              className="text-center"
+              className="text-center bg-light border rounded"
               style={{
                 width: "18rem",
-                backgroundColor: memberships.color,
-                border: "2px solid black",
               }}
               key={memberships.id}
             >
@@ -263,7 +261,6 @@ function Membership() {
 
                     <Button 
                       variant='success'
-                      className="p-o text-dark"
                       onClick={() => handleOpenForm(memberships)}
                     >
                       Editar  

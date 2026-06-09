@@ -250,7 +250,7 @@ const Clases = () => {
                         {classes.map((clase) => (
                             <Col key={clase.id} xs={12} md={6} lg={4} className="mb-4">
                                 <Card className="h-100 shadow-sm border-0">
-                                    <Card.Body className="d-flex flex-column">
+                                    <Card.Body className="d-flex flex-column bg-light border rounded">
                                         <div className="d-flex justify-content-between align-items-start mb-3">
                                             <Card.Title className="fw-bold">{clase.name}</Card.Title>
                                             <Badge bg={clase.capacity > 0 ? "success" : "danger"}>
