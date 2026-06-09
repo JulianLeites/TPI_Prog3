@@ -6,6 +6,7 @@ import ModalClase from '../UI/ModalClase';
 import Footer from '../UI/Footer';
 import ModalDeleteClass from '../UI/ModalDeleteClass';
 import { useAuth } from '../../context/AuthContext';
+import notification from '../../utils/toast';
 
 const Clases = () => {
     const { user } = useAuth()
@@ -119,6 +120,7 @@ const Clases = () => {
                 const editedClass = await response.json();
 
                 setClasses(classes.map(c => c.id === classEdit.id ? editedClass : c))
+                notification.success('Clase editada con exito')
             } else {
                 const response = await fetch(`http://localhost:3000/classes`, {
                     method: 'POST',
@@ -136,12 +138,13 @@ const Clases = () => {
                 const newClass = await response.json();
 
                 setClasses([...classes, newClass]);
+                notification.success('Clase creada con exito')
             }
             setShowFormModal(false);
             setClassEdit(initialStateClass);
         } catch (error) {
             console.error('An error occured', error);
-            alert('hubo un error al guardar la clase, intente de nuevo');
+            notification.error('Hubo un error al guardar la clase, intente de nuevo')
         }
     };
 
@@ -170,9 +173,10 @@ const Clases = () => {
             setClasses(updateClasses);
 
             setSelectedClass(null);
+            notification.success('Clase eliminada con exito')
         } catch(error) {
             console.error('Failure deliting class', error)
-            alert("No se pudo eliminar la clase, intente de nuevo")
+            notification.error('Hubo un error eliminando la clase, intente de nuevo')
         }
         setShowDeleteModal(false);
     };
@@ -203,7 +207,7 @@ const Clases = () => {
                 throw new Error(resData.message || 'Error procesing class')
             }
 
-            alert(resData.message)
+            notification.success('Inscripcion Completada')
 
             setClasses(prevClases =>
                 prevClases.map(c => c.id === clase.id ? {...c, capacity: c.capacity-1} : c)
@@ -211,12 +215,11 @@ const Clases = () => {
             
             console.log('Inscripcion exitosa: ', resData.userClass)
         } catch(error) {
+            notification.error('Hubo un error en la inscripcion, intente de nuevo')
             throw error
         }
 
         await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        console.log('datos recibido en classes: ', clase)
     } 
 
     if (loading) {

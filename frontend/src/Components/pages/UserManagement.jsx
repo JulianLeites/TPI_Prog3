@@ -9,6 +9,7 @@ import { SlOptionsVertical } from "react-icons/sl";
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import notification from '../../utils/toast';
 
 const UserManagement = () => {
     const { user } = useAuth();
@@ -68,10 +69,10 @@ const UserManagement = () => {
             setUsers((prevUsers) => [...prevUsers, newUser]);
 
             setShowRegisterModal(false);
-            console.log("Usuario Creado con exito");
+            notification.success('Usuario creado con exito')
         } catch (error) {
             console.error('Error creating new user', error);
-            alert(`No se pudo crear el usuario: ${error.message}`)
+            notification.error('No se pudo crear el usuario')
         }
     }
 
@@ -97,10 +98,12 @@ const UserManagement = () => {
                 const updatedUsers = users.filter(u => u.id !== selectedUser.id);
                 setUsers(updatedUsers)
 
+                notification.success('Usuario eliminadao con exito')
+
                 setSelectedUser(null)
             } catch (error) {
                 console.error('Failure deleting de use', error)
-                alert("No se pudo eliminar el usuario, intente de nuevo")
+                notification.error('No se pudo eliminar el usuario')
             }
         }
     };
@@ -110,7 +113,7 @@ const UserManagement = () => {
         e.stopPropagation();
 
         if(user.rol === 'superAdmin' && users.filter(u => u.rol === 'superAdmin').length <= 1) {
-            alert("No se puede eliminar el último SuperAdmin");
+            notification.warning('No se puede eliminar al ultimo superAdmin')
             return;
         } else{
             setSelectedUser(user);
@@ -151,12 +154,15 @@ const UserManagement = () => {
             });
             console.log(`Usuario con ID ${user.id} ascendido a ${newRol}`);
             setUsers(updatedUsers);
+            notification.success('Rol modificado con exito')
+        } else {
+            notification.success('Error al modificar el rol')
         }
     }
 
     const handleDemoteUser = async (user, newRol) => {
         if(user.rol === 'superAdmin' && users.filter(u => u.rol === 'superAdmin').length <= 1) {
-            alert("No se puede degradar el último SuperAdmin");
+            notification.warning('No se puede degradar al ultimo superAdmin')
             return;
         }
 
@@ -171,6 +177,9 @@ const UserManagement = () => {
             });
         console.log(`Usuario con ID ${user.id} degradado a ${newRol}`);
         setUsers(updatedUsers);
+        notification.success('Rol modificado con exito')
+        } else {
+            notification.error('Error al modificar el rol')
         }
     }
 

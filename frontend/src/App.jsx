@@ -8,11 +8,13 @@ import Contacto from "./components/pages/Contacto.jsx"
 import UserManagement from "./Components/pages/UserManagement.jsx"
 
 import { useState } from "react"
+import { ToastContainer } from 'react-toastify';
 import ProtectedRoutes from "./routes/protectedRoutes.jsx"
 
 
 function App() {
   return (
+    <>
       <Routes>
         <Route path="/" element={<Dashboard/>}/>
         <Route path="/contacto" element={<Contacto/>} />
@@ -26,6 +28,8 @@ function App() {
           <Route path="/user-management" element={<UserManagement/>} />
         </Route>
       </Routes>
+      <ToastContainer limit={3}/>  
+    </>
   )
 }
 

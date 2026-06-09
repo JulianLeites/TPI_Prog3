@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '../../context/AuthContext'
+import notification from '../../utils/toast'
 
 const loginSchema = z
   .object({
@@ -71,6 +72,7 @@ const Login = ({show, onHide}) => {
       login(decodedUser, resData.token)
 
       onHide()
+      notification.success('Has iniciado sesion')
     } catch (error) {
       console.error('Error Login: ', error)
     }
@@ -100,6 +102,7 @@ const Login = ({show, onHide}) => {
       }
 
       setIsLoginMode(true)
+      notification.success('Has creado tu cuenta, ya puedes iniciar sesion')
     } catch(error) {
       console.error('Error Register: ', error)
     }
