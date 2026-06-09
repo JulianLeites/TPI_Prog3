@@ -376,7 +376,7 @@ const Profile = () => {
                 </Col>
                 
                 <Col xs={12} sm={6} md={columnSize}>
-                    <Card className='shadow-sm border rounded h-100 bg-white'>
+                    <Card className='shadow-sm border rounded h-100 bg-light'>
                         <Card.Body className='p-4 d-flex flex-column justify-content-between'>
                             <h5 className="border-bottom pb-2 mb-3 text-muted text-uppercase" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>Info Básica</h5>
                             <h3 className="text-primary mb-3">{profileData?.username}</h3>
@@ -389,7 +389,7 @@ const Profile = () => {
 
                 {isAdmin && (
                     <Col xs={12} sm={6} md={columnSize}>
-                        <Card className="shadow-sm border rounded h-100 bg-white border-danger">
+                        <Card className="shadow-sm border rounded h-100 bg-light border-danger">
                             <Card.Body className='p-4'>
                                 <h5 className="border-bottom pb-2 mb-3 text-danger text-uppercase" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>Información de Administrador</h5>
                                 <p className="mb-2 text-monospace"><strong>ID de Usuario:</strong> <br />{profileData?.id}</p>
@@ -554,7 +554,7 @@ const Profile = () => {
                         <Row className='g-4'>
                             {classesData?.map((enrollment) => (
                                 <Col key={enrollment.id} xs={12} sm={6} md={4} lg={3}>
-                                    <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-white'>
+                                    <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
                                         <Card.Body className='d-flex flex-column p-4'>
                                             <div className='d-flex justify-content-between align-items-start mb-2'>
                                                 <Card.Title className='fe-bold mb-0 text-dark' style={{ fontSize: '1.15rem' }}>
