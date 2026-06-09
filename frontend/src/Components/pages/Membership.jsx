@@ -244,9 +244,10 @@ function Membership() {
 
               <Card.Img variant="top" src={memberships.imageUrl || DefaultImage} style={{maxHeight: "38vh", objectFit:'cover'}} />
               <Card.Body>
-                <Card.Title>{memberships.name}</Card.Title>
-                <Card.Text>{memberships.price}</Card.Text>
-                <Card.Text>{memberships.max_classes}</Card.Text>
+                <Card.Title className="mb-2">{memberships.name}</Card.Title>
+                <Card.Text><strong>${memberships.price}</strong></Card.Text>
+                <Card.Text> Este plan te permite inscribirte hasta <strong> {memberships.max_classes} </strong> clases</Card.Text>
+                <Card.Text><strong>Acceso al gimnasio</strong></Card.Text>
                 <Button variant="primary" onClick={() => handleSuscript(memberships)}>
                   Suscribirse
                 </Button> <br/>
