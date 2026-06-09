@@ -171,7 +171,8 @@ function ModalBuyMembership({ show, onHide, selectedMembership, onBuySubmit }) {
                 <h5>{selectedMembership ? `Suscripción: ${selectedMembership.name}` : "Suscripción"}</h5>
               </Accordion.Header>
               <Accordion.Body>
-                <p>Cuota: {selectedMembership ? selectedMembership.quota : "N/A"}</p>
+                <p>Esta clase te inscribirte hasta <strong>{selectedMembership?.max_classes}</strong> clases</p>
+                <p><strong>Acceso al gimnasio</strong></p>
               </Accordion.Body>
             </Accordion.Item>
           </Accordion>
@@ -183,7 +184,7 @@ function ModalBuyMembership({ show, onHide, selectedMembership, onBuySubmit }) {
                   {...register("name")}
                   className="form-control mb-2"
                   type="text"
-                  placeholder="First Name"
+                  placeholder="Nombre"
                 />
                 {errors.name && (
                   <p className="text-danger">{errors.name.message}</p>
@@ -195,7 +196,7 @@ function ModalBuyMembership({ show, onHide, selectedMembership, onBuySubmit }) {
                   {...register("surname")}
                   className="form-control mb-2"
                   type="text"
-                  placeholder="Last Name"
+                  placeholder="Apellido"
                 />
                 {errors.surname && (
                   <p className="text-danger">{errors.surname.message}</p>
@@ -291,7 +292,7 @@ function ModalBuyMembership({ show, onHide, selectedMembership, onBuySubmit }) {
               </Col>
             </Row>
           </form>
-          <p className="text-center">Total a pagar: {selectedMembership ? `$${selectedMembership.price}` : "N/A"}</p>
+          <p className="text-center">Total: <br/> <strong>{selectedMembership ? `$${selectedMembership.price}` : "N/A"}</strong></p>
         </Modal.Body>
 
         <Modal.Footer>

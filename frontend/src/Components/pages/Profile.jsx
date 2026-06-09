@@ -536,7 +536,7 @@ const Profile = () => {
                     </h4>
 
                     {!classesData || classesData.length === 0 ? (
-                        <Card className='text-center p-5 bg-light border-0 shadow-sm'>
+                        <Card className='text-center p-5 bg-light border bg-light shadow-sm'>
                             <p className='text-muted italic mb-0 fs-5'>
                                 {!isViewingOther ? (
                                     'No estás inscripto a ninguna clase actualmente.'
