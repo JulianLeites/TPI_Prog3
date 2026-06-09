@@ -12,6 +12,7 @@ import ModalEliminateUser from '../UI/ModalEliminateUser';
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import notification from '../../utils/toast';
 
 const Profile = () => {
     const { id } = useParams()
@@ -137,8 +138,12 @@ const Profile = () => {
                 }
                 return prevData
             })
+
+            notification.success('Membresia cancelada con exito')
+
         } catch(error) {
             console.error('Error canceling membership: ', error)
+            notification.error('Error al cancelar la membresia')
         } finally {
             setShowCancelModal(false)
         }
@@ -172,10 +177,12 @@ const Profile = () => {
             const updateClasses = classesData.filter(c => c.id !== selectedClass.id);
             setClassesData(updateClasses);
 
+            notification.success('Baja de la clase con procesada exito')
+
             setSelectedClass(null);
         } catch(error) {
             console.error('Failure leaving class', error)
-            alert("No se pudo abandonar la clase, intente de nuevo")
+            notification.error('No se pudo dar de baja de la clase, intente de nuevo')
         }
         setShowLeaveClassModal(false);
     }
@@ -218,9 +225,12 @@ const Profile = () => {
                 })
             }
 
+            notification.success('Perfil editado con exito')
+
             setShowEditProfile(false)
         } catch(error){
             console.error('failure updating profile: ', error)
+            notification.error('Error al editar el perfil')
         }
     }
 
@@ -245,17 +255,17 @@ const Profile = () => {
                 }
 
                 if(!isViewingOther){
-                    alert('Tu cuenta ha sido eliminada correctamente')
+                    notification.success('Tu cuenta ha sido eliminada con exito')
                     logout()
                     navigate('/')
                 } else {
-                    alert('Usuario eliminado con exito')
+                    notification.success('Usuario eliminado con exito')
                     navigate('/user-management')
                 }
 
             } catch (error) {
                 console.error('Failure deleting de use', error)
-                alert("No se pudo eliminar el usuario, intente de nuevo")
+                notification.error('No se pudo eliminar el usuario')
             }
         }
     };
@@ -277,14 +287,17 @@ const Profile = () => {
             }
             return true;
 
+            notification.success('Rol actualizado con exito')
+
         } catch (error) {
             console.error("fail updating user rol ", error )
+            notification.error('Error al actualizar el rol')
         }
     }
 
     const handleDeleteUser = () => {
         if(profileData.rol === 'superAdmin') {
-            alert("Un superAdmin solo se puede eliminar desde la gestion de usuarios");
+            notification.warning('Un superAdmin solo se puede eliminar desde la gestion de usuarios')
             return;
         }   
         setShowDeleteModal(true);
@@ -292,7 +305,7 @@ const Profile = () => {
 
     const handleDemoteUser = async (user, newRol) => {
         if(user.rol === 'superAdmin') {
-            alert("Acceda a la gestion de usuarios para gestion un superAdmin");
+            notification.warning('El rol de un superAdmin solo se puede modificar desde la gestion de usuarios')
             return;
         }
 
@@ -301,15 +314,23 @@ const Profile = () => {
         if (successful){
             console.log(`Usuario con ID ${user.id} degradado a ${newRol}`);
             setProfileData(prev => ({ ...prev, rol: newRol}))
+            notification.success('Rol modificado con exito')
+        } else {
+            notification.error('Error al modificar el rol')
         }
+
     }
 
     const handlePromoteUser = async (user, newRol) => {
         const successful = await updateUserRol(user.id, newRol)
         if (successful){   
             console.log(`Usuario con ID ${user.id} ascendido a ${newRol}`);
-            setProfileData(prev => ({ ...prev, rol: newRol}))   
+            setProfileData(prev => ({ ...prev, rol: newRol})) 
+            notification.success('Rol modificado con exito')  
+        } else {
+            notification.error('Error al modificar el rol')
         }
+
     }
 
     if (loading) {

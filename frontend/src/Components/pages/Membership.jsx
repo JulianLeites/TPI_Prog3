@@ -9,6 +9,7 @@ import NavBar from "../UI/NavBar";
 import ModalDeleteClass from "../UI/ModalDeleteClass";
 import DefaultImage from '../../assets/img/MembershipDefaultImage.jpg'
 import { useAuth } from "../../context/AuthContext";
+import notification from "../../utils/toast";
 
 
 function Membership() {
@@ -76,10 +77,9 @@ function Membership() {
         throw new Error(resData.message || 'Error procesing membeship')
       }
 
-      alert(resData.message)
-
-      console.log('suscripcion exitosa: ', resData.userMembership)
+      notification.success('Suscripcion realizada con exito')
     } catch (error) {
+      notification.success('Error al suscribirse, intente de nuevo')
       throw error
     }
 
@@ -144,6 +144,8 @@ function Membership() {
 
         const editedMembeship = await response.json();
 
+        notification.success('Membresia Actualizada con exito')
+
         setMemberships(memberships.map(m => m.id === membershipEdit.id ? editedMembeship : m))
       } else {
         const response = await fetch('http://localhost:3000/memberships', {
@@ -160,13 +162,15 @@ function Membership() {
         }
         
         const newMembership = await response.json();
+
+        notification.success('Membresia creada con exito')
         
         setMemberships([...memberships, newMembership]);
       }
         setShowNewMembershipModal(false);
     } catch (error) {
       console.error('An error occured', error);
-      alert('Hubo un error al guardar la membresia, intente de nuevo');
+      notification.error('No se pudo guardar la membresia, intente de nuevo')
     }
   }
 
@@ -192,10 +196,12 @@ function Membership() {
             const updateMembership = memberships.filter(m => m.id !== selectedMembership);
             setMemberships(updateMembership);
 
+            notification.success('Membresia eliminada con exito')
+
             setSelectedMembership(null);
         } catch(error) {
             console.error('Failure deliting membership', error)
-            alert("No se pudo eliminar la membresia, intente de nuevo")
+            notification.error('No se pudo eliminar la membresia, intente de nuevo')
         }
         setShowDeleteModal(false);
     };
