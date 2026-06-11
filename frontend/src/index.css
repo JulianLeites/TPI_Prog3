@@ -42,13 +42,9 @@
     justify-content: center;
 }
 
-.accordeon-list {
-    border-color: black;
-}
-
 .user-list-header {
     text-align: center;
-    min-width: 400px;
+    min-width: 800px;
     max-width: 600px;
     align-self: center;
 }
@@ -61,18 +57,13 @@
 }
 
 .user-list-item{
-    min-width: 400px;
+    min-width: 800px;
     display: flex;;
     justify-content: space-between;
-    border-Color: black;
     border-left: none;
     border-right: none;
-    /* background-color: #DEDEDE; */
-}
-
-.user-list-item:first-child {
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
 }
 
 .user-list-item:last-child {
@@ -84,3 +75,14 @@
     filter: invert(1);
 }
 
+.user-search-list-item{
+    min-width: 800px;
+    display: flex;;
+    justify-content: space-between;
+    border-left: none;
+    border-right: none;
+}
+
+.user-info{
+    width: 250px;
+}
