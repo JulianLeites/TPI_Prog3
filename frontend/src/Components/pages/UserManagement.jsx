@@ -4,7 +4,7 @@ import Footer from '../UI/Footer'
 import ModalEliminateUser from '../UI/ModalEliminateUser';
 import ModalRegister from '../UI/ModalRegister';
 
-import { Accordion, ListGroup,Dropdown, Spinner, Button } from 'react-bootstrap';
+import { Accordion, ListGroup,Dropdown, Spinner, Button, Form, Row, Col } from 'react-bootstrap';
 import { SlOptionsVertical } from "react-icons/sl";
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +22,8 @@ const UserManagement = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
+
+    const [searchUser, setSearchUser] = useState('')
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -183,6 +185,22 @@ const UserManagement = () => {
         }
     }
 
+    const handleSearchUser = (e) => {
+        setSearchUser(e.target.value)
+    }
+
+    const filteredUsers = users.filter(usuario => {
+        if(searchUser.trim() === 'true') return true
+
+        const query = searchUser.toLocaleLowerCase()
+
+        const matchesId = String(usuario.id).startsWith(query)
+        const matchesName = usuario.name ? usuario.name.toLowerCase().startsWith(query) : false
+        const matchesUsername = usuario.username ? usuario.username.toLowerCase().startsWith(query) : false
+
+        return matchesId || matchesName || matchesUsername
+    })
+
     if(loading) {
         return (
             <div className='d-flex flex-column justify-content-center align-items-center' style={{ minHeight: "100vh"}}>
@@ -197,14 +215,68 @@ const UserManagement = () => {
         <NavBar />
         <h1 className='text-center mt-4'>Gestión de Usuarios</h1>
         <div className='text-center' style={{ minHeight: "70vh"}}>
-                <Button 
-                    className='mt-5 mb-5'
-                    variant='success'
-                    style={{width: "400px"}}
-                    onClick={() => setShowRegisterModal(true)}
-                >
-                    Crear Usuario
-                </Button>
+            <Button 
+                className='mt-3 mb-3'
+                variant='success'
+                style={{width: "800px"}}
+                onClick={() => setShowRegisterModal(true)}
+            >
+                Crear Usuario
+            </Button>
+
+            <div className='mb-3 d-flex flex-column justify-content-center align-items-center'>
+                <Form.Control
+                    type="text"
+                    placeholder="Buscar"
+                    className='mb-3'
+                    style={{borderRadius:'20px', width: '800px'}}
+                    value={searchUser}
+                    onChange={handleSearchUser}
+                />
+                {searchUser.trim() !== '' && (
+                    <div className='d-flex justify-content-center align-items-center' style={{width: '800px'}}>
+                        {filteredUsers.length === 0 ? (
+                            <p className="text-muted small text-center my-3 bg-light border" style={{width: '800px', borderRadius: '20px'}}>No se encontraron usuarios</p>
+                        ) : (
+                            <ListGroup variant='flush' style={{borderRadius: '20px'}} className='border bg-light'>
+                                {filteredUsers.map(u => (
+                                    <ListGroup.Item key={user.id} className='user-search-list-item bg-light d-flex flex-row justify-content-around align-items-center'>
+                                        <Row>
+                                            <Col className='user-info'>
+                                                <p className='mb-0 text-center'>{u.name}</p>
+                                            </Col>
+                                            <Col className='user-info'>
+                                                <p className='mb-0 text-center'>{u.username}</p>
+                                            </Col>
+                                            <Col className='user-info'>
+                                                <p className='mb-0 text-center'>{u.id}</p>
+                                            </Col>
+                                        </Row>
+                                        <Dropdown drop="end" style={{ display: 'inline-block' }}>
+                                            <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
+                                                <SlOptionsVertical />
+                                            </Dropdown.Toggle>
+                                            <Dropdown.Menu>
+                                                <Dropdown.Item onClick={() => handleDemoteUser(u, 'admin')}>Degradar a Admin</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => handleDemoteUser(u, 'teacher')}>Degradar a Teacher</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => handleDemoteUser(u, 'user')}>Degradar a User</Dropdown.Item>
+                                                <Dropdown.Divider/>
+                                                <Dropdown.Item onClick={(e) => handleDeleteUser(e, u)}>
+                                                    Eliminar
+                                                </Dropdown.Item>
+                                                <Dropdown.Item onClick={() => navigate(`/profile/${u.id}`)}>
+                                                    Ver Perfil
+                                                </Dropdown.Item>
+                                            </Dropdown.Menu>
+                                        </Dropdown>
+                                    </ListGroup.Item>
+                                ))}
+                            </ListGroup>  
+                        )}
+                    </div>
+                )}
+            </div>
+
             
             <div className='d-flex justify-content-center align-items-center gap-3' >
                 <Accordion alwaysOpen className='user-management-accordion'>
@@ -215,7 +287,17 @@ const UserManagement = () => {
                                 <ListGroup>
                                     {users.filter(user => user.rol === 'superAdmin').map(user => (
                                         <ListGroup.Item key={user.id} className='user-list-item bg-light'>
-                                            {user.name}
+                                            <Row>
+                                                <Col className='user-info'>
+                                                    <p className='mb-0 text-center'>{user.name}</p>
+                                                </Col>
+                                                <Col className='user-info'>
+                                                    <p className='mb-0 text-center'>{user.username}</p>
+                                                </Col>
+                                                <Col className='user-info'>
+                                                    <p className='mb-0 text-center'>{user.id}</p>
+                                                </Col>
+                                            </Row>
                                             <Dropdown drop="end" style={{ display: 'inline-block' }}>
                                                 <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
                                                     <SlOptionsVertical />
@@ -249,8 +331,18 @@ const UserManagement = () => {
                                 <ListGroup>
                                     {users.filter(user => user.rol === 'admin').map(user => (
                                         <ListGroup.Item key={user.id} className='user-list-item bg-light'>
-                                                {user.name}
-                                                <Dropdown drop="end" style={{ display: 'inline-block' }}>
+                                            <Row>
+                                                <Col className='user-info'>
+                                                    <p className='mb-0 text-center'>{user.name}</p>
+                                                </Col>
+                                                <Col className='user-info'>
+                                                    <p className='mb-0 text-center'>{user.username}</p>
+                                                </Col>
+                                                <Col className='user-info'>
+                                                    <p className='mb-0 text-center'>{user.id}</p>
+                                                </Col>
+                                            </Row>
+                                            <Dropdown drop="end" style={{ display: 'inline-block' }}>
                                                 <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
                                                     <SlOptionsVertical />
                                                 </Dropdown.Toggle>
@@ -281,7 +373,17 @@ const UserManagement = () => {
                                 <ListGroup>
                                     {users.filter(user => user.rol === 'teacher').map(user => (
                                         <ListGroup.Item key={user.id} className='user-list-item bg-light'>
-                                            {user.name}
+                                            <Row>
+                                                <Col className='user-info'>
+                                                    <p className='mb-0 text-center'>{user.name}</p>
+                                                </Col>
+                                                <Col className='user-info'>
+                                                    <p className='mb-0 text-center'>{user.username}</p>
+                                                </Col>
+                                                <Col className='user-info'>
+                                                    <p className='mb-0 text-center'>{user.id}</p>
+                                                </Col>
+                                            </Row>
                                             <Dropdown drop="end" style={{ display: 'inline-block' }}>
                                                 <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
                                                     <SlOptionsVertical />
@@ -315,7 +417,17 @@ const UserManagement = () => {
                                 <ListGroup>
                                     {users.filter(user => user.rol === 'user').map(user => (
                                         <ListGroup.Item key={user.id} className='user-list-item bg-light'>
-                                            {user.name}
+                                            <Row>
+                                                <Col className='user-info'>
+                                                    <p className='mb-0 text-center'>{user.name}</p>
+                                                </Col>
+                                                <Col className='user-info'>
+                                                    <p className='mb-0 text-center'>{user.username}</p>
+                                                </Col>
+                                                <Col className='user-info'>
+                                                    <p className='mb-0 text-center'>{user.id}</p>
+                                                </Col>
+                                            </Row>
                                             <Dropdown drop="end" style={{ display: 'inline-block' }}>
                                                 <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
                                                     <SlOptionsVertical />
