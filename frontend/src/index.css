@@ -21,6 +21,10 @@
   display: none !important;
 }
 
+.classes-filter::after {
+    display: none !important;
+}
+
 .drop-down-toggle-no-caret:hover,
 .drop-down-toggle-no-caret:focus,
 .drop-down-toggle-no-caret:active,

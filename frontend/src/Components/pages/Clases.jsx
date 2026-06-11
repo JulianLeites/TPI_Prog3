@@ -1,12 +1,14 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Badge, Spinner, Dropdown, Accordion, Form, ListGroup } from 'react-bootstrap';
 import NavBar from '../UI/NavBar';
 import ModalClase from '../UI/ModalClase';
 import Footer from '../UI/Footer';
 import ModalDeleteClass from '../UI/ModalDeleteClass';
 import { useAuth } from '../../context/AuthContext';
 import notification from '../../utils/toast';
+
+import { IoOptions } from "react-icons/io5";
 
 const Clases = () => {
     const { user } = useAuth()
@@ -32,6 +34,9 @@ const Clases = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const [selectedClass, setSelectedClass] = useState(null);
+    const [selectedDay, setSelectedDay] = useState([])
+    const [selectedTeacher, setSelectedTeacher] = useState([])
+    const [searchingClass, setSearchingClass] = useState('')
 
     useEffect (() => {
         const fetchClasses = async () => {
@@ -220,7 +225,42 @@ const Clases = () => {
         }
 
         await new Promise((resolve) => setTimeout(resolve, 1000))
-    } 
+    }
+
+    const handleDayFilter = (day) => {
+        if (day === 'Todos') {
+            setSelectedDay([])
+        } else {
+            setSelectedDay(prev =>
+                prev.includes(day)
+                ? prev.filter(d => d !== day)
+                : [...prev, day]
+            )
+        }
+    }
+
+    const handleTeacherFilter = (teacherId) => {
+        if (teacherId === 'Todos') {
+            setSelectedTeacher([])
+        } else {
+            setSelectedTeacher(prev =>
+                prev.includes(teacherId)
+                ? prev.filter(id => id !== teacherId)
+                : [...prev, teacherId]
+            )
+        }
+    }
+
+    const handleSearchClass = (e) => {
+        setSearchingClass(e.target.value)
+    }
+
+    const filteredClasses = classes.filter(clase => {
+        const matchesDay = selectedDay.length === 0 || selectedDay.includes(clase.day)
+        const matchesTeacher = selectedTeacher.length === 0 || selectedTeacher.includes(clase.teacher_id)
+        const matchesSearch = searchingClass.trim() === '' || clase.name.toLowerCase().includes(searchingClass.toLocaleLowerCase())
+        return matchesDay && matchesTeacher && matchesSearch
+    });
 
     if (loading) {
         return(
@@ -236,18 +276,159 @@ const Clases = () => {
             <NavBar/>
             <div style={{ minHeight: "70vh"}}>
                 <Container className="py-5">
-                    <div className="d-flex justify-content-between align-items-center mb-5">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
                         <h2>Lista de Clases</h2>
-                            {(user?.rol === 'admin' || user?.rol === 'superAdmin') && (
-                                <Button variant="success" onClick={() => handleOpenForm()}>
-                                    + Crear clase
-                                </Button>
-                            )}
+                        {(user?.rol === 'admin' || user?.rol === 'superAdmin') && (
+                            <Button variant="success" onClick={() => handleOpenForm()}>
+                                + Crear clase
+                            </Button>
+                        )}
+                    </div>
+
+                    <div className='d-flex justify-content-start align-items-center mb-3 gap-2'>
+                        <div>
+                            <Form.Control
+                                type="text"
+                                placeholder="Buscar"
+                                style={{borderRadius:'20px'}}
+                                value={searchingClass}
+                                onChange={handleSearchClass}
+                            />
+                        </div>
+                        <Dropdown drop='end' style={{ display: 'inline-block' }}>
+                            <Dropdown.Toggle variant='light' className='border rounded classes-filter d-flex justify-content-center align-items-center'>
+                                <IoOptions size={20}/>
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                <Accordion>
+                                    <Accordion.Item eventKey='0' style={{borderTop:'none', borderLeft:'none', borderRight:'none'}}>
+                                        <Accordion.Header>
+                                            Dias
+                                        </Accordion.Header>
+                                        <Accordion.Body>
+                                            <ListGroup>
+                                                <ListGroup.Item>
+                                                    <Form.Check
+                                                        type='checkbox'
+                                                        id='all-days'
+                                                        label='Todos'
+                                                        checked={selectedDay.length === 0}
+                                                        onChange={() => handleDayFilter('Todos')}
+                                                        style={{ userSelect: 'none', WebkitUserSelect: 'none', msUserSelect: 'none' }}
+                                                    />
+                                                </ListGroup.Item>
+                                                <ListGroup.Item>
+                                                    <Form.Check
+                                                        type='checkbox'
+                                                        id='lunes'
+                                                        label='Lunes'
+                                                        checked={selectedDay.includes('Lunes')}
+                                                        onChange={() => handleDayFilter('Lunes')}
+                                                        style={{ userSelect: 'none', WebkitUserSelect: 'none', msUserSelect: 'none' }}
+                                                    />
+                                                </ListGroup.Item>
+                                                <ListGroup.Item>
+                                                    <Form.Check
+                                                        type='checkbox'
+                                                        id='martes'
+                                                        label='Martes'
+                                                        checked={selectedDay.includes('Martes')}
+                                                        onChange={() => handleDayFilter('Martes')}
+                                                        style={{ userSelect: 'none', WebkitUserSelect: 'none', msUserSelect: 'none' }}
+                                                    />
+                                                </ListGroup.Item>
+                                                <ListGroup.Item>
+                                                    <Form.Check
+                                                        type='checkbox'
+                                                        id='miercoles'
+                                                        label='Miercoles'
+                                                        checked={selectedDay.includes('Miercoles')}
+                                                        onChange={() => handleDayFilter('Miercoles')}
+                                                        style={{ userSelect: 'none', WebkitUserSelect: 'none', msUserSelect: 'none' }}
+                                                    />
+                                                </ListGroup.Item>
+                                                <ListGroup.Item>
+                                                    <Form.Check
+                                                        type='checkbox'
+                                                        id='jueves'
+                                                        label='Jueves'
+                                                        checked={selectedDay.includes('Jueves')}
+                                                        onChange={() => handleDayFilter('Jueves')}
+                                                        style={{ userSelect: 'none', WebkitUserSelect: 'none', msUserSelect: 'none' }}
+                                                    />
+                                                </ListGroup.Item>
+                                                <ListGroup.Item>
+                                                    <Form.Check
+                                                        type='checkbox'
+                                                        id='viernes'
+                                                        label='Viernes'
+                                                        checked={selectedDay.includes('Viernes')}
+                                                        onChange={() => handleDayFilter('Viernes')}
+                                                        style={{ userSelect: 'none', WebkitUserSelect: 'none', msUserSelect: 'none' }}
+                                                    />
+                                                </ListGroup.Item>
+                                                <ListGroup.Item>
+                                                    <Form.Check
+                                                        type='checkbox'
+                                                        id='sabado'
+                                                        label='Sabado'
+                                                        checked={selectedDay.includes('Sabado')}
+                                                        onChange={() => handleDayFilter('Sabado')}
+                                                        style={{ userSelect: 'none', WebkitUserSelect: 'none', msUserSelect: 'none' }}
+                                                    />
+                                                </ListGroup.Item>
+                                                <ListGroup.Item>
+                                                    <Form.Check
+                                                        type='checkbox'
+                                                        id='domingo'
+                                                        label='Domingo'
+                                                        checked={selectedDay.includes('Domingo')}
+                                                        onChange={() => handleDayFilter('Domingo')}
+                                                        style={{ userSelect: 'none', WebkitUserSelect: 'none', msUserSelect: 'none' }}
+                                                    />
+                                                </ListGroup.Item>
+                                            </ListGroup>
+                                        </Accordion.Body>
+                                    </Accordion.Item>
+                                    <Accordion.Item eventKey='1' style={{borderBottom:'none', borderLeft:'none', borderRight:'none'}}>
+                                        <Accordion.Header>
+                                            Profesor
+                                        </Accordion.Header>
+                                        <Accordion.Body>
+                                            <ListGroup>
+                                                <ListGroup.Item>
+                                                    <Form.Check
+                                                        type='checkbox'
+                                                        id='all-teachers'
+                                                        label='Todos'
+                                                        checked={selectedTeacher.length === 0}
+                                                        onChange={() => handleTeacherFilter('Todos')}
+                                                        style={{ userSelect: 'none', WebkitUserSelect: 'none', msUserSelect: 'none' }}
+                                                    />
+                                                </ListGroup.Item>
+                                                {teachers.map(t => (
+                                                    <ListGroup.Item key={t.id}>
+                                                        <Form.Check
+                                                            type='checkbox'
+                                                            id={t.id}
+                                                            label={t.name}
+                                                            checked={selectedTeacher.includes(t.id)}
+                                                            onChange={() => handleTeacherFilter(t.id)}
+                                                            style={{ userSelect: 'none', WebkitUserSelect: 'none', msUserSelect: 'none' }}
+                                                        />
+                                                    </ListGroup.Item>
+                                                ))}
+                                            </ListGroup>
+                                        </Accordion.Body>
+                                    </Accordion.Item>
+                                </Accordion>
+                            </Dropdown.Menu>
+                        </Dropdown>
                         
                     </div>
 
                     <Row>
-                        {classes.map((clase) => (
+                        {filteredClasses.map((clase) => (
                             <Col key={clase.id} xs={12} md={6} lg={4} className="mb-4">
                                 <Card className="h-100 shadow-sm border-0">
                                     <Card.Body className="d-flex flex-column bg-light border rounded">
