@@ -158,7 +158,7 @@ const UserManagement = () => {
             setUsers(updatedUsers);
             notification.success('Rol modificado con exito')
         } else {
-            notification.success('Error al modificar el rol')
+            notification.error('Error al modificar el rol')
         }
     }
 
