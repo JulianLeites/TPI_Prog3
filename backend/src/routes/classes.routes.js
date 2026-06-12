@@ -5,13 +5,16 @@ import {
     getClassById,
     createClass,
     updateClass,
-    deleteClass
+    deleteClass,
+    getClassAssignedToTeacher
 } from '../controllers/classController.js';
 
 const router = Router();
 
 router.get('/classes', getAllClasses);
 router.post('/classes', verifyToken, createClass);
+
+router.get('/classes/teacher/:id', verifyToken, getClassAssignedToTeacher)
 
 router.get('/classes/:id', verifyToken, getClassById);
 router.put('/classes/:id', verifyToken, updateClass);
