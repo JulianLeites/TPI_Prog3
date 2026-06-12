@@ -119,7 +119,7 @@ export const getUserEnrolledClasses = async (req, res) => {
 
         const classesData = await Class.findAll({
             where: {id: classIds},
-            attributes: ['id', 'name', 'day', 'hour']
+            attributes: ['id', 'name', 'day', 'hour', 'teacher_id']
         })
 
         const response = enrollments.map(enrollment => {

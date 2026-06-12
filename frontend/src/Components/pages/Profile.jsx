@@ -26,6 +26,7 @@ const Profile = () => {
     const navigate = useNavigate()
 
     const [profileData, setProfileData] = useState(null)
+    const [teacherData, setTeacherData] = useState([])
     const [membershipData, setMembershipData] = useState(null)
     const [classesData, setClassesData] = useState([])
     const [loading, setLoading] = useState(true)
@@ -39,13 +40,18 @@ const Profile = () => {
     const [selectedClass, setSelectedClass] = useState(null)
     const [profileEdit, setProfileEdit] = useState(null)
 
+    const [teachers, setTeachers] = useState(null)
+
     const { user: currentUser, updateUserContext, logout } = useAuth()
 
     const isViewingOther = Boolean(id) && String(id) !== String(currentUser?.id || currentUser?._id)
 
     useEffect(() => {
+        if(!isViewingOther && !currentUser) return;
+
         const fetchProfile = async () => {
             setLoading(true)
+            setError(null)
             const token = localStorage.getItem('token')
 
             const profileUrl = isViewingOther ? `http://localhost:3000/profile/${id}` : 'http://localhost:3000/profile'
@@ -67,6 +73,26 @@ const Profile = () => {
 
                 const data = await response.json()
                 setProfileData(data)
+
+                if(data.rol !== 'user'){
+                    const teacherUrl = `http://localhost:3000/classes/teacher/${data.id}`
+                    const teacherResponse = await fetch(teacherUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+    
+                    if(!teacherResponse.ok){
+                        throw new Error('Cannot get teacher classes')
+                    }
+                    const tData = await teacherResponse.json()
+                    setTeacherData(tData)
+                } else{
+                    setTeacherData([])
+                }
+
 
                 const membershipResponse = await fetch(membershipUrl, {
                     method: 'GET',
@@ -113,7 +139,34 @@ const Profile = () => {
             }
         }
         fetchProfile()
-    }, [id, isViewingOther])
+
+        const fetchTeachers = async () => {
+            try {
+                const token = localStorage.getItem('token')
+
+                const response = await fetch ('http://localhost:3000/profile/users', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                if (!response.ok){
+                    throw new Error ('Error al obtener usuarios')
+                }
+                const data = await response.json();
+
+                if(Array.isArray(data)){
+                    const filteredTeachers = data.filter(u => u.rol === "teacher")
+                    setTeachers(filteredTeachers)
+                }
+
+            } catch (error) {
+                console.error('Error getting teachers', error)
+            }
+        }
+        fetchTeachers();
+    }, [id, isViewingOther, currentUser])
 
     const handleCancelMembership = async () => {
         const token = localStorage.getItem('token')
@@ -332,6 +385,14 @@ const Profile = () => {
         }
     }
 
+    const getTeacherName = (data) => {
+        const idProfesor = data?.teacher_id || data?.teacher?.id;
+        if (!idProfesor) return "No asignado";
+        
+        const teacherFound = teachers.find(t => String(t.id) === String(idProfesor));
+        return teacherFound ? teacherFound.name : "No asignado";
+    };
+
     if (loading) {
         return(
             <div className='d-flex flex-column justify-content-center align-items-center' style={{ minHeight: "100vh"}}>
@@ -342,6 +403,7 @@ const Profile = () => {
     }
 
     const isAdmin = currentUser?.rol === 'admin' || currentUser?.rol === 'superAdmin'
+    const isNotUser = currentUser?.rol !== 'user'
     const columnSize = isAdmin ? 3 : 4;
     const isAlreadyCanceled = Array.isArray(membershipData) && membershipData.every(userMem => userMem.automatic_renewal === false)
 
@@ -524,78 +586,129 @@ const Profile = () => {
                 </Col>
             </Row>
 
-            <Row className='mt-5'>
-                <Col xs={12}>
+            {isNotUser && (
+                <>
                     <h4 className="mb-4 text-secondary text-uppercase fw-bold" style={{ letterSpacing: '1px' }}>
                         {isViewingOther ? (
-                            'Clases Activas'
+                            'Clases Asignadas'
                         ) : (
-                            'Mis Clases Activas'
+                            'Mis Clases Asignadas'
                         )}
                     </h4>
 
-                    {!classesData || classesData.length === 0 ? (
-                        <Card className='text-center p-5 bg-light border bg-light shadow-sm'>
-                            <p className='text-muted italic mb-0 fs-5'>
-                                {!isViewingOther ? (
-                                    'No estás inscripto a ninguna clase actualmente.'
-                                ) : (
-                                    'Este usuario no esta inscripto en ninguna clase'
-                                )}
-                            </p>
-                            {!isViewingOther && (
-                                <Button variant='primary' href='/clases' className='mt-3 mx-auto shadow-sm px-4'>
-                                    Explorar Grilla de Actividades
-                                </Button>
-                            )}
-                        </Card>
+                    <Swiper
+                        loop={true}
+                        modules={[Navigation]}
+                        navigation
+                        spaceBetween={20}
+                        slidesPerView={4}
+                        slidesPerGroup={1}
+                    >
+                        {teacherData?.map((tClasses) => (
+                            <SwiperSlide key={tClasses.id}>
+                                <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
+                                    <Card.Body className='d-flex flex-column p-4'>
+                                        <div className='d-flex justify-content-between align-items-start mb-2'>
+                                            <Card.Title className='fe-bold mb-0 text-dark' style={{ fontSize: '1.15rem' }}>
+                                                {tClasses.name}
+                                            </Card.Title>
+                                            <Badge bg='success' className='px-2 py-1'>Dictando</Badge>
+                                        </div>
+
+                                        <Card.Text className='text-muted small mt-2 flex-grow-1'>
+                                            <strong>Día:</strong> {tClasses.day} <br />
+                                            <strong>Hora:</strong> {tClasses.hour} hs
+                                        </Card.Text>
+
+                                        <div className="mt-3 pt-2 border-top">
+                                            <Button 
+                                                variant="outline-danger" 
+                                                size="sm" 
+                                                className="w-100 fw-bold"
+                                                onClick={() => handleOpenLeaveClass(tClasses)}
+                                            >
+                                                Dar de baja
+                                            </Button>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            </SwiperSlide>
+                        ))}
+
+                    </Swiper>
+                </>
+            )}
+
+            <div>
+                <h4 className="mb-4 text-secondary text-uppercase fw-bold" style={{ letterSpacing: '1px' }}>
+                    {isViewingOther ? (
+                        'Clases Activas'
                     ) : (
-                        <Row className='g-4'>
-                            <Swiper
-                                loop={true}
-                                modules={[Navigation]}
-                                navigation
-                                spaceBetween={20}
-                                slidesPerView={4}
-                                slidesPerGroup={1}
-                                
-                            >
-                                {classesData?.map((enrollment) => (
-                                    <SwiperSlide key={enrollment.id}>
-                                        <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
-                                            <Card.Body className='d-flex flex-column p-4'>
-                                                <div className='d-flex justify-content-between align-items-start mb-2'>
-                                                    <Card.Title className='fe-bold mb-0 text-dark' style={{ fontSize: '1.15rem' }}>
-                                                        {enrollment.Class?.name}
-                                                    </Card.Title>
-                                                    <Badge bg='success' className='px-2 py-1'>Inscripto</Badge>
-                                                </div>
-
-                                                <Card.Text className='text-muted small mt-2 flex-grow-1'>
-                                                    <strong>Profesor:</strong> {enrollment.Class?.teacher?.name || 'Asignado'} <br />
-                                                    <strong>Día:</strong> {enrollment.Class?.day} <br />
-                                                    <strong>Hora:</strong> {enrollment.Class?.hour} hs
-                                                </Card.Text>
-
-                                                <div className="mt-3 pt-2 border-top">
-                                                    <Button 
-                                                        variant="outline-danger" 
-                                                        size="sm" 
-                                                        className="w-100 fw-bold"
-                                                        onClick={() => handleOpenLeaveClass(enrollment)}
-                                                    >
-                                                        Dar de baja
-                                                    </Button>
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </SwiperSlide>
-                                ))}
-                            </Swiper>
-                        </Row>
+                        'Mis Clases Activas'
                     )}
-                </Col>
-            </Row>
+                </h4>
+
+                {!classesData || classesData.length === 0 ? (
+                    <Card className='text-center p-5 bg-light border bg-light shadow-sm'>
+                        <p className='text-muted italic mb-0 fs-5'>
+                            {!isViewingOther ? (
+                                'No estás inscripto a ninguna clase actualmente.'
+                            ) : (
+                                'Este usuario no esta inscripto en ninguna clase'
+                            )}
+                        </p>
+                        {!isViewingOther && (
+                            <Button variant='primary' href='/clases' className='mt-3 mx-auto shadow-sm px-4'>
+                                Explorar Grilla de Actividades
+                            </Button>
+                        )}
+                    </Card>
+                ) : (
+                    <Row className='g-4'>
+                        <Swiper
+                            loop={true}
+                            modules={[Navigation]}
+                            navigation
+                            spaceBetween={20}
+                            slidesPerView={4}
+                            slidesPerGroup={1}
+                            
+                        >
+                            {classesData?.map((enrollment) => (
+                                <SwiperSlide key={enrollment.id}>
+                                    <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
+                                        <Card.Body className='d-flex flex-column p-4'>
+                                            <div className='d-flex justify-content-between align-items-start mb-2'>
+                                                <Card.Title className='fe-bold mb-0 text-dark' style={{ fontSize: '1.15rem' }}>
+                                                    {enrollment.Class?.name}
+                                                </Card.Title>
+                                                <Badge bg='success' className='px-2 py-1'>Inscripto</Badge>
+                                            </div>
+
+                                            <Card.Text className='text-muted small mt-2 flex-grow-1'>
+                                                <strong>Profesor:</strong> {getTeacherName(enrollment.Class) || 'Asignado'} <br />
+                                                <strong>Día:</strong> {enrollment.Class?.day} <br />
+                                                <strong>Hora:</strong> {enrollment.Class?.hour} hs
+                                            </Card.Text>
+
+                                            <div className="mt-3 pt-2 border-top">
+                                                <Button 
+                                                    variant="outline-danger" 
+                                                    size="sm" 
+                                                    className="w-100 fw-bold"
+                                                    onClick={() => handleOpenLeaveClass(enrollment)}
+                                                >
+                                                    Dar de baja
+                                                </Button>
+                                            </div>
+                                        </Card.Body>
+                                    </Card>
+                                </SwiperSlide>
+                            ))}
+                        </Swiper>
+                    </Row>
+                )}
+            </div>
             </Container>
             
             <ModalCancelMembership

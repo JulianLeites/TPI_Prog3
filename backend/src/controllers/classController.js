@@ -23,6 +23,26 @@ export const getClassById = async (req, res) => {
     }
 };
 
+export const getClassAssignedToTeacher = async (req, res) => {
+    const { id } = req.params;
+
+    if(!id) {
+        return res.status(400).json({error: 'Id not found'})
+    }
+
+    try {
+        const classes = await Class.findAll({
+            where: {
+                teacher_id: id
+            }
+        })
+        return res.json(classes)
+    } catch (error) {
+        console.error('Error in getClassAssignedToTeacher:', error)
+        res.status(500).json({error: 'Failed to get clases assigned to teacher'})
+    }
+}
+
 export const createClass = async (req, res) => {
     const { name, teacher_id, capacity, day, hour, description } = req.body;
 
