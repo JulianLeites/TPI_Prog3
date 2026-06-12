@@ -1,4 +1,5 @@
 import { User } from '../models/Users.js';
+import { Class } from '../models/Classes.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { secretKey } from '../config.js';
@@ -111,6 +112,18 @@ export const updateUser = async (req, res) => {
             return res.status(404).json({ error: 'User Not Found' })
         }
 
+        if (user.rol === 'teacher' && rol && rol !== 'teacher') {
+            const assignedClasses = await Class.count({
+                where: {
+                    teacher_id: user.id
+                }
+            })
+
+            if (assignedClasses > 0) {
+                return res.status(400).json({error: 'Cannot modify rol of teacher assigned to classes'})
+            } 
+        }
+
         if (name && name.length < 3) {
             return res.status(400).json({ error: 'Name must be at least 3 characters long' });
         }
@@ -148,7 +161,6 @@ export const updateUser = async (req, res) => {
         
         user.name = name || user.name;
         user.username = username || user.username;
-        user.password = password || user.password;
         user.email = email || user.email;
         user.rol = rol || user.rol;
         await user.save();
@@ -180,7 +192,19 @@ export const deleteUser = async (req, res) => {
     try {
         const user = await User.findByPk(id);
         if (!user) {
-            res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        if (user.rol === 'teacher') {
+            const assignedClasses = await Class.count({
+                where: {
+                    teacher_id: user.id
+                }
+            })
+
+            if (assignedClasses > 0) {
+                return res.status(400).json({error: 'Cannot delete user assigned as teacher to classes'})
+            } 
         }
         
         await user.destroy()

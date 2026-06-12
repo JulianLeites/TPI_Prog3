@@ -13,6 +13,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import notification from '../../utils/toast';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation } from 'swiper/modules';
+
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 const Profile = () => {
     const { id } = useParams()
@@ -281,17 +287,16 @@ const Profile = () => {
                 },
                 body: JSON.stringify({rol: newRol})
             })
-            const comfirmation = await response.json()
+
             if (!response.ok) {
-                throw new Error('Failed to update user rol');
+                const errorData = await response.json()
+                throw new Error(errorData.error || 'Failed to update user rol');
             }
             return true;
-
-            notification.success('Rol actualizado con exito')
-
         } catch (error) {
             console.error("fail updating user rol ", error )
             notification.error('Error al actualizar el rol')
+            return false
         }
     }
 
@@ -315,10 +320,7 @@ const Profile = () => {
             console.log(`Usuario con ID ${user.id} degradado a ${newRol}`);
             setProfileData(prev => ({ ...prev, rol: newRol}))
             notification.success('Rol modificado con exito')
-        } else {
-            notification.error('Error al modificar el rol')
         }
-
     }
 
     const handlePromoteUser = async (user, newRol) => {
@@ -327,10 +329,7 @@ const Profile = () => {
             console.log(`Usuario con ID ${user.id} ascendido a ${newRol}`);
             setProfileData(prev => ({ ...prev, rol: newRol})) 
             notification.success('Rol modificado con exito')  
-        } else {
-            notification.error('Error al modificar el rol')
         }
-
     }
 
     if (loading) {
@@ -552,45 +551,54 @@ const Profile = () => {
                         </Card>
                     ) : (
                         <Row className='g-4'>
-                            {classesData?.map((enrollment) => (
-                                <Col key={enrollment.id} xs={12} sm={6} md={4} lg={3}>
-                                    <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
-                                        <Card.Body className='d-flex flex-column p-4'>
-                                            <div className='d-flex justify-content-between align-items-start mb-2'>
-                                                <Card.Title className='fe-bold mb-0 text-dark' style={{ fontSize: '1.15rem' }}>
-                                                    {enrollment.Class?.name}
-                                                </Card.Title>
-                                                <Badge bg='success' className='px-2 py-1'>Inscripto</Badge>
-                                            </div>
-
-                                            <Card.Text className='text-muted small mt-2 flex-grow-1'>
-                                                <strong>Profesor:</strong> {enrollment.Class?.teacher?.name || 'Asignado'} <br />
-                                                <strong>Día:</strong> {enrollment.Class?.day} <br />
-                                                <strong>Hora:</strong> {enrollment.Class?.hour} hs
-                                            </Card.Text>
-
-                                            <div className="mt-3 pt-2 border-top">
-                                                <Button 
-                                                    variant="outline-danger" 
-                                                    size="sm" 
-                                                    className="w-100 fw-bold"
-                                                    onClick={() => handleOpenLeaveClass(enrollment)}
-                                                >
-                                                    Dar de baja
-                                                </Button>
-                                            </div>
-                                        </Card.Body>
-                                    </Card>
+                            <Swiper
+                                loop={true}
+                                modules={[Navigation]}
+                                navigation
+                                spaceBetween={20}
+                                slidesPerView={4}
+                                slidesPerGroup={1}
                                 
-                                </Col>
-                            ))}
+                            >
+                                {classesData?.map((enrollment) => (
+                                    <SwiperSlide key={enrollment.id}>
+                                        <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
+                                            <Card.Body className='d-flex flex-column p-4'>
+                                                <div className='d-flex justify-content-between align-items-start mb-2'>
+                                                    <Card.Title className='fe-bold mb-0 text-dark' style={{ fontSize: '1.15rem' }}>
+                                                        {enrollment.Class?.name}
+                                                    </Card.Title>
+                                                    <Badge bg='success' className='px-2 py-1'>Inscripto</Badge>
+                                                </div>
+
+                                                <Card.Text className='text-muted small mt-2 flex-grow-1'>
+                                                    <strong>Profesor:</strong> {enrollment.Class?.teacher?.name || 'Asignado'} <br />
+                                                    <strong>Día:</strong> {enrollment.Class?.day} <br />
+                                                    <strong>Hora:</strong> {enrollment.Class?.hour} hs
+                                                </Card.Text>
+
+                                                <div className="mt-3 pt-2 border-top">
+                                                    <Button 
+                                                        variant="outline-danger" 
+                                                        size="sm" 
+                                                        className="w-100 fw-bold"
+                                                        onClick={() => handleOpenLeaveClass(enrollment)}
+                                                    >
+                                                        Dar de baja
+                                                    </Button>
+                                                </div>
+                                            </Card.Body>
+                                        </Card>
+                                    </SwiperSlide>
+                                ))}
+                            </Swiper>
                         </Row>
                     )}
                 </Col>
             </Row>
-        </Container>
-
-        <ModalCancelMembership
+            </Container>
+            
+            <ModalCancelMembership
             show={showCancelModal}
             onHide={() => setShowCancelModal(false)}
             onConfirmCancel={handleCancelMembership}
