@@ -16,31 +16,34 @@ import notification from '../../utils/toast';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 
+import { updateUserRolApi, editUserProfileApi, deleteUserApi} from '../../services/userService.js'
+
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 const Profile = () => {
     const { id } = useParams()
-
     const navigate = useNavigate()
 
+    // Estados de datos 
     const [profileData, setProfileData] = useState(null)
     const [teacherData, setTeacherData] = useState([])
     const [membershipData, setMembershipData] = useState(null)
     const [classesData, setClassesData] = useState([])
+    const [teachers, setTeachers] = useState([])
+
+    // Estados de UI y Modales
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-
     const [showCancelModal, setShowCancelModal] = useState(false)
-    const [showleaveClassModal, setShowLeaveClassModal] = useState(false)
+    const [showLeaveClassModal, setShowLeaveClassModal] = useState(false)
     const [showEditProfile, setShowEditProfile] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
 
     const [selectedClass, setSelectedClass] = useState(null)
     const [profileEdit, setProfileEdit] = useState(null)
 
-    const [teachers, setTeachers] = useState(null)
 
     const { user: currentUser, updateUserContext, logout } = useAuth()
 
@@ -253,27 +256,11 @@ const Profile = () => {
 
     const handleEditProfile = async (formData) => {
         try {
-            const token = localStorage.getItem('token')
-
             const { id, rol, created_at, updated_at, ...camposEditables } = formData;
+            const userId = isViewingOther ? id : (currentUser?.id || currentUser?._id);
 
-            const updateUrl = isViewingOther ? `http://localhost:3000/profile/${id}` : 'http://localhost:3000/profile'
-
-            const response = await fetch(updateUrl, {
-                method: 'PUT',
-                headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-                body: JSON.stringify(camposEditables)
-            })
-
-            const resData = await response.json()
+            const resData = await editUserProfileApi(camposEditables)
             
-            if(!response.ok){
-                throw new Error(resData.message || 'Error updating profile')
-            }
-
             setProfileData(prevData => ({...prevData, ...resData}))
 
             if(!isViewingOther){
@@ -285,8 +272,8 @@ const Profile = () => {
             }
 
             notification.success('Perfil editado con exito')
-
             setShowEditProfile(false)
+
         } catch(error){
             console.error('failure updating profile: ', error)
             notification.error('Error al editar el perfil')
@@ -294,64 +281,28 @@ const Profile = () => {
     }
 
     const confirmElimination = async (data) => {
-        const token = localStorage.getItem('token')
+        if (data.confirmation !== "ELIMINAR") return
 
-        if (data.confirmation === "ELIMINAR") {
-            setShowDeleteModal(false);
-
-            const userToDelete = isViewingOther ? id : (currentUser?.id || currentUser?._id)
-            try {
-                const response = await fetch(`http://localhost:3000/profile/users/${userToDelete}`,{
-                    method: "DELETE",
-                    headers : {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                })
-
-                if(!response.ok) {
-                    throw new Error ('Failed to delete user');
-                }
-
-                if(!isViewingOther){
-                    notification.success('Tu cuenta ha sido eliminada con exito')
-                    logout()
-                    navigate('/')
-                } else {
-                    notification.success('Usuario eliminado con exito')
-                    navigate('/user-management')
-                }
-
-            } catch (error) {
-                console.error('Failure deleting de use', error)
-                notification.error('No se pudo eliminar el usuario')
-            }
-        }
-    };
-
-    const updateUserRol = async (userId, newRol) => {
-        const token = localStorage.getItem('token')
+        const userToDelete = isViewingOther ? id : (currentUser?.id || currentUser?._id)
         try {
-            const response = await fetch(`http://localhost:3000/profile/users/${userId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({rol: newRol})
-            })
+            await deleteUserApi(userToDelete)
+            setShowDeleteModal(false)
 
-            if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.error || 'Failed to update user rol');
+            if(!isViewingOther){
+                notification.success('Tu cuenta ha sido eliminada con exito')
+                logout()
+                navigate('/')
+            } else {
+                notification.success('Usuario eliminado con exito')
+                navigate('/user-management')
             }
-            return true;
+
         } catch (error) {
-            console.error("fail updating user rol ", error )
-            notification.error('Error al actualizar el rol')
-            return false
+            console.error('Failure deleting de user', error)
+            notification.error('No se pudo eliminar el usuario')
         }
-    }
+        
+    };
 
     const handleDeleteUser = () => {
         if(profileData.rol === 'superAdmin') {
@@ -361,27 +312,19 @@ const Profile = () => {
         setShowDeleteModal(true);
     }
 
-    const handleDemoteUser = async (user, newRol) => {
+    const updateUserRol = async (user, newRol) => {
         if(user.rol === 'superAdmin') {
-            notification.warning('El rol de un superAdmin solo se puede modificar desde la gestion de usuarios')
+            notification.warning('El rol de un superAdmin solo se puede modificar desde la gestión de usuarios')
             return;
         }
 
-        const successful = await updateUserRol(user.id, newRol)
-
-        if (successful){
-            console.log(`Usuario con ID ${user.id} degradado a ${newRol}`);
+        try {
+            await updateUserRolApi(user.id, newRol);
             setProfileData(prev => ({ ...prev, rol: newRol}))
-            notification.success('Rol modificado con exito')
-        }
-    }
-
-    const handlePromoteUser = async (user, newRol) => {
-        const successful = await updateUserRol(user.id, newRol)
-        if (successful){   
-            console.log(`Usuario con ID ${user.id} ascendido a ${newRol}`);
-            setProfileData(prev => ({ ...prev, rol: newRol})) 
-            notification.success('Rol modificado con exito')  
+            notification.success('Rol modificado con éxito')
+        } catch (error) {
+            console.error("Fail updating user rol", error)
+            notification.error('Error al actualizar el rol')
         }
     }
 
@@ -413,6 +356,7 @@ const Profile = () => {
         <Container className='mt-5 mb-5' style={{ minHeight: "75vh"}}>
             <Row className='justify-content-center g-5 align-items-stretch mb-5'>
 
+                {/* Foto perfil + editar/borrar cuenta */}
                 <Col xs={12} md='auto' className='d-flex flex-column align-items-center justify-content-center px-4'>
                     <div className="text-center p-3 h-100 d-flex flex-column justify-content-center align-items-center" style={{ minWidth: '180px' }}>
                         <FaRegUserCircle size={130} className='mb-4'/>
@@ -436,25 +380,32 @@ const Profile = () => {
                     </div>
                 </Col>
                 
+                {/* Info basica */}
                 <Col xs={12} sm={6} md={columnSize}>
                     <Card className='shadow-sm border rounded h-100 bg-light'>
                         <Card.Body className='p-4 d-flex flex-column justify-content-between'>
-                            <h5 className="border-bottom pb-2 mb-3 text-muted text-uppercase" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>Info Básica</h5>
-                            <h3 className="text-primary mb-3">{profileData?.username}</h3>
-                            <p className='mb-2'><strong>Nombre: </strong> {profileData?.name}</p>
-                            <p className='mb-2'><strong>Email: </strong> {profileData?.email}</p>
-                            <p className='mb-0'><strong>Fecha de Registro: </strong> {new Date (profileData?.created_at).toLocaleDateString()}</p>
+                            <div>
+                                <h5 className="border-bottom pb-2 mb-3 text-muted text-uppercase" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>Info Básica</h5>
+                                <h3 className="text-primary mb-3">{profileData?.username}</h3>
+                                <p className='mb-2'><strong>Nombre: </strong> {profileData?.name}</p>
+                                <p className='mb-2'><strong>Email: </strong> {profileData?.email}</p>
+                            </div>
+                            <p className='mb-0'><strong>Fecha de Registro: </strong> {profileData?.created_at ? new Date(profileData.created_at).toLocaleDateString() : 'N/A'}</p>
                         </Card.Body>
                     </Card>
                 </Col>
 
+                {/* Info Admin */}
                 {isAdmin && (
                     <Col xs={12} sm={6} md={columnSize}>
                         <Card className="shadow-sm border rounded h-100 bg-light border-danger">
-                            <Card.Body className='p-4'>
-                                <h5 className="border-bottom pb-2 mb-3 text-danger text-uppercase" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>Información de Administrador</h5>
-                                <p className="mb-2 text-monospace"><strong>ID de Usuario:</strong> <br />{profileData?.id}</p>
-                                <p className="mb-0"><strong>Rol asignado:</strong> <br /><span className="badge bg-danger text-white mt-1 px-3 py-2">{profileData?.rol}</span></p>
+
+                            <Card.Body className='p-4 d-flex flex-column justify-content-between'>
+                                <div>
+                                    <h5 className="border-bottom pb-2 mb-3 text-danger text-uppercase" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>Información de Administrador</h5>
+                                    <p className="mb-2 text-monospace"><strong>ID de Usuario:</strong> <br />{profileData?.id}</p>
+                                    <p className="mb-0"><strong>Rol asignado:</strong> <br /><span className="badge bg-danger text-white mt-1 px-3 py-2">{profileData?.rol}</span></p>
+                                </div>
                                 
                                 <Dropdown drop='bottom'>
                                     <Dropdown.Toggle
@@ -468,25 +419,25 @@ const Profile = () => {
                                     <Dropdown.Menu>
                                         {profileData?.rol === 'user' && (
                                             <>
-                                                <Dropdown.Item onClick={() => handlePromoteUser(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handlePromoteUser(profileData, 'admin')}>Ascender a Admin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handlePromoteUser(profileData, 'teacher')}>Ascender a Teacher</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'admin')}>Ascender a Admin</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'teacher')}>Ascender a Teacher</Dropdown.Item>
                                             </>
                                         )}
 
                                         {profileData?.rol === 'teacher' && (
                                             <>
-                                                <Dropdown.Item onClick={() => handlePromoteUser(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handlePromoteUser(profileData, 'admin')}>Ascender a Admin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handleDemoteUser(profileData, 'user')}>Degradar a User</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'admin')}>Ascender a Admin</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'user')}>Degradar a User</Dropdown.Item>
                                             </>
                                         )}
 
                                         {profileData?.rol === 'admin' && (
                                             <>
-                                                <Dropdown.Item onClick={() => handlePromoteUser(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handleDemoteUser(profileData, 'teacher')}>Degradar a Teacher</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handleDemoteUser(profileData, 'user')}>Degradar a User</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'teacher')}>Degradar a Teacher</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'user')}>Degradar a User</Dropdown.Item>
                                             </>
                                         )}
 
@@ -502,6 +453,7 @@ const Profile = () => {
                     </Col>
                 )}
 
+                {/* Membresias */}
                 <Col xs ={12} sm={6} md={columnSize} className='d-flex justify-content-center'>
                     {(!membershipData || (Array.isArray(membershipData) && membershipData.length === 0) || membershipData?.plan === null) ? (
                         <Card className='shadow-sm border rounded text-center h-100 bg-light w-100 d-flex flex-column justify-content-center p-4'>
@@ -519,75 +471,73 @@ const Profile = () => {
                             </Card.Body>
                         </Card>
                     ) : (
-                        <div xs={12} sm={6} md={columnSize} className='d-flex justify-content-center w-100'>
-                            <Carousel
-                                controls={membershipData.length > 1}
-                                indicators={false}
-                                interval={null}
-                                className='h-100 w-100 custom-carousel'
-                            >
-                                {Array.isArray(membershipData) && membershipData.map((userMem, index) => {
-                                    const isInQueue = new Date(userMem.date_start) > new Date()
+                        <Carousel
+                            controls={membershipData.length > 1}
+                            indicators={false}
+                            interval={null}
+                            className='h-100 w-100 custom-carousel'
+                        >
+                            {Array.isArray(membershipData) && membershipData.map((userMem, index) => {
+                                const isInQueue = new Date(userMem.date_start) > new Date()
+                                const currentKey = userMem.id || index
 
-                                    return(
-                                        <Carousel.Item key={index} className='h-100' style={{ width: '100%' }}>
-                                            <Card
-                                                className="text-center shadow-sm w-100" 
-                                                style={{ 
-                                                    backgroundColor: userMem?.color || '#ffffff',
-                                                    border: "2px solid #6c757d",
-                                                    position: 'relative',
-                                                    width: '100%'
-                                                }}
-                                            >
-                                                <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10 }}>
-                                                    {isInQueue ? (
-                                                        <Badge bg="secondary" className="px-2 py-2"> En Cola</Badge>
-                                                    ) : (
-                                                        <Badge bg="success" className="px-2 py-2"> Activa hoy</Badge>
-                                                    )}
+                                return(
+                                    <Carousel.Item key={currentKey} className='h-100' style={{ width: '100%' }}>
+                                        <Card
+                                            className="text-center shadow-sm w-100 h-100" 
+                                            style={{ 
+                                                backgroundColor: userMem?.color || '#ffffff',
+                                                border: "2px solid #6c757d",
+                                                position: 'relative',
+                                                width: '100%'
+                                            }}
+                                        >
+                                            <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10 }}>
+                                                <Badge bg={isInQueue ? "secondary" : "success"} className="px-2 py-2">
+                                                    {isInQueue ? 'En Cola' : 'Activa hoy'}
+                                                </Badge>
+                                            </div>
+
+                                            <Card.Img
+                                                variant="top" 
+                                                src={userMem?.Membership.imageUrl || DefaultImage} 
+                                                style={{ maxHeight: "150px", objectFit: 'cover' }}
+                                            />
+                                            <Card.Body className="d-flex flex-column justify-content-between p-3">
+                                                <div>
+                                                    <Card.Title className="fw-bold text-uppercase m-0 mb-2" style={{fontSize: '1.2rem'}}>
+                                                        {userMem?.Membership?.name || userMem.name}
+                                                    </Card.Title>
+                                                    <Card.Text className="mb-1"><strong>Precio:</strong> ${userMem?.Membership?.price}</Card.Text>
+                                                    <Card.Text className="mb-1" style={{fontSize: '0.9rem'}}>
+                                                        <strong>Vence:</strong> {userMem?.date_end ? new Date(userMem.date_end).toLocaleDateString() : 'N/A'}
+                                                    </Card.Text>
+                                                    <Card.Text className="mb-3" style={{fontSize: '0.9rem'}}>
+                                                        <strong>Renovación Aut.:</strong> {userMem?.automatic_renewal ? 'Sí' : 'No'}
+                                                    </Card.Text>
                                                 </div>
-
-                                                <Card.Img
-                                                    variant="top" 
-                                                    src={userMem?.Membership.imageUrl || DefaultImage} 
-                                                    style={{ maxHeight: "150px", objectFit: 'cover' }}
-                                                />
-                                                <Card.Body className="d-flex flex-column justify-content-between p-3">
-                                                    <div>
-                                                        <Card.Title className="font-weight-bold text-uppercase m-0 mb-2" style={{fontSize: '1.2rem'}}>
-                                                            {userMem?.Membership?.name || userMem.name}
-                                                        </Card.Title>
-                                                        <Card.Text className="mb-1"><strong>Precio:</strong> ${userMem?.Membership?.price}</Card.Text>
-                                                        <Card.Text className="mb-1" style={{fontSize: '0.9rem'}}>
-                                                            <strong>Vence:</strong> {userMem?.date_end ? new Date(userMem.date_end).toLocaleDateString() : 'N/A'}
-                                                        </Card.Text>
-                                                        <Card.Text className="mb-3" style={{fontSize: '0.9rem'}}>
-                                                            <strong>Renovación Aut.:</strong> {userMem?.automatic_renewal ? 'Sí' : 'No'}
-                                                        </Card.Text>
-                                                    </div>
-                                                    <Button 
-                                                        variant="outline-danger" 
-                                                        size="sm" 
-                                                        className="mt-auto w-100 font-weight-bold"
-                                                        onClick={() => setShowCancelModal(true)}
-                                                        disabled={isAlreadyCanceled}
-                                                    >
-                                                        {isAlreadyCanceled ? 'Suscripcion Cancelada' : 'Cancelar Suscripcion'}
-                                                    </Button>
-                                                </Card.Body>
-                                            </Card>
-                                        </Carousel.Item>
-                                    )
-                                })}
-                            </Carousel>
-                        </div>
+                                                <Button 
+                                                    variant="outline-danger" 
+                                                    size="sm" 
+                                                    className="mt-auto w-100 fe-bold"
+                                                    onClick={() => setShowCancelModal(true)}
+                                                    disabled={isAlreadyCanceled}
+                                                >
+                                                    {isAlreadyCanceled ? 'Suscripcion Cancelada' : 'Cancelar Suscripcion'}
+                                                </Button>
+                                            </Card.Body>
+                                        </Card>
+                                    </Carousel.Item>
+                                )
+                            })}
+                        </Carousel>
                     )}
                 </Col>
             </Row>
 
+            {/* Clases asignadas a profesores */}
             {isNotUser && (
-                <>
+                <div className='mb-5'>
                     <h4 className="mb-4 text-secondary text-uppercase fw-bold" style={{ letterSpacing: '1px' }}>
                         {isViewingOther ? (
                             'Clases Asignadas'
@@ -609,7 +559,7 @@ const Profile = () => {
                                 <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
                                     <Card.Body className='d-flex flex-column p-4'>
                                         <div className='d-flex justify-content-between align-items-start mb-2'>
-                                            <Card.Title className='fe-bold mb-0 text-dark' style={{ fontSize: '1.15rem' }}>
+                                            <Card.Title className='fw-bold mb-0 text-dark' style={{ fontSize: '1.15rem' }}>
                                                 {tClasses.name}
                                             </Card.Title>
                                             <Badge bg='success' className='px-2 py-1'>Dictando</Badge>
@@ -625,7 +575,7 @@ const Profile = () => {
                                                 variant="outline-danger" 
                                                 size="sm" 
                                                 className="w-100 fw-bold"
-                                                onClick={() => handleOpenLeaveClass(tClasses)}
+                                                onClick={() => handleOpenLeaveClass({Class: tClasses})}
                                             >
                                                 Dar de baja
                                             </Button>
@@ -636,9 +586,10 @@ const Profile = () => {
                         ))}
 
                     </Swiper>
-                </>
+                </div>
             )}
 
+            {/* Clases Activas */}
             <div>
                 <h4 className="mb-4 text-secondary text-uppercase fw-bold" style={{ letterSpacing: '1px' }}>
                     {isViewingOther ? (
@@ -664,49 +615,47 @@ const Profile = () => {
                         )}
                     </Card>
                 ) : (
-                    <Row className='g-4'>
-                        <Swiper
-                            loop={true}
-                            modules={[Navigation]}
-                            navigation
-                            spaceBetween={20}
-                            slidesPerView={4}
-                            slidesPerGroup={1}
-                            
-                        >
-                            {classesData?.map((enrollment) => (
-                                <SwiperSlide key={enrollment.id}>
-                                    <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
-                                        <Card.Body className='d-flex flex-column p-4'>
-                                            <div className='d-flex justify-content-between align-items-start mb-2'>
-                                                <Card.Title className='fe-bold mb-0 text-dark' style={{ fontSize: '1.15rem' }}>
-                                                    {enrollment.Class?.name}
-                                                </Card.Title>
-                                                <Badge bg='success' className='px-2 py-1'>Inscripto</Badge>
-                                            </div>
+                    <Swiper
+                        loop={true}
+                        modules={[Navigation]}
+                        navigation
+                        spaceBetween={20}
+                        slidesPerView={4}
+                        slidesPerGroup={1}
+                        
+                    >
+                        {classesData?.map((enrollment) => (
+                            <SwiperSlide key={enrollment.id}>
+                                <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
+                                    <Card.Body className='d-flex flex-column p-4'>
+                                        <div className='d-flex justify-content-between align-items-start mb-2'>
+                                            <Card.Title className='fw-bold mb-0 text-dark' style={{ fontSize: '1.15rem' }}>
+                                                {enrollment.Class?.name}
+                                            </Card.Title>
+                                            <Badge bg='success' className='px-2 py-1'>Inscripto</Badge>
+                                        </div>
 
-                                            <Card.Text className='text-muted small mt-2 flex-grow-1'>
-                                                <strong>Profesor:</strong> {getTeacherName(enrollment.Class) || 'Asignado'} <br />
-                                                <strong>Día:</strong> {enrollment.Class?.day} <br />
-                                                <strong>Hora:</strong> {enrollment.Class?.hour} hs
-                                            </Card.Text>
+                                        <Card.Text className='text-muted small mt-2 flex-grow-1'>
+                                            <strong>Profesor:</strong> {getTeacherName(enrollment.Class) || 'Asignado'} <br />
+                                            <strong>Día:</strong> {enrollment.Class?.day} <br />
+                                            <strong>Hora:</strong> {enrollment.Class?.hour} hs
+                                        </Card.Text>
 
-                                            <div className="mt-3 pt-2 border-top">
-                                                <Button 
-                                                    variant="outline-danger" 
-                                                    size="sm" 
-                                                    className="w-100 fw-bold"
-                                                    onClick={() => handleOpenLeaveClass(enrollment)}
-                                                >
-                                                    Dar de baja
-                                                </Button>
-                                            </div>
-                                        </Card.Body>
-                                    </Card>
-                                </SwiperSlide>
-                            ))}
-                        </Swiper>
-                    </Row>
+                                        <div className="mt-3 pt-2 border-top">
+                                            <Button 
+                                                variant="outline-danger" 
+                                                size="sm" 
+                                                className="w-100 fw-bold"
+                                                onClick={() => handleOpenLeaveClass(enrollment)}
+                                            >
+                                                Dar de baja
+                                            </Button>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
                 )}
             </div>
             </Container>
@@ -718,7 +667,7 @@ const Profile = () => {
         />
 
         <ModalLeaveClass
-            show={showleaveClassModal}
+            show={showLeaveClassModal}
             onHide={() => setShowLeaveClassModal(false)}
             onConfirmLeave={handleLeaveClass}
             clase={selectedClass?.Class}
