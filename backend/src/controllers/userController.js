@@ -97,22 +97,153 @@ export const loginUser = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-    const { id } = req.params
-    const currentUser = req.user
+    const userId = req.user.id;
 
-    if(currentUser.rol !== 'admin' && currentUser.rol !== 'superAdmin'){
-        return res.status(403).json({ error: 'No tienes permisos para realizar esta accion'})
-    }
+    const { name, username, password, email } = req.body;
 
-    const { name, username, password, email, rol } = req.body;
     try {
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(userId);
 
-        if(!user) {
-            return res.status(404).json({ error: 'User Not Found' })
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
         }
 
-        if (user.rol === 'teacher' && rol && rol !== 'teacher') {
+        if (name && name.length < 3) {
+            return res.status(400).json({
+                error: 'Name must be at least 3 characters long'
+            });
+        }
+
+        if (username) {
+            if (username.length < 3) {
+                return res.status(400).json({
+                    error: 'Username must be at least 3 characters long'
+                });
+            }
+
+            const existingUser = await User.findOne({
+                where: { username }
+            });
+
+            if (existingUser && existingUser.id !== userId) {
+                return res.status(400).json({
+                    error: 'Username already exists'
+                });
+            }
+        }
+
+        if (password && password.trim() !== '') {
+            if (password.length < 8) {
+                return res.status(400).json({
+                    error: 'Password must be at least 8 characters long'
+                });
+            }
+
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(password, salt);
+        }
+
+        if (email) {
+            if (!/\S+@\S+\.\S+/.test(email)) {
+                return res.status(400).json({
+                    error: 'Invalid email format'
+                });
+            }
+
+            const existingEmail = await User.findOne({
+                where: { email }
+            });
+
+            if (existingEmail && existingEmail.id !== userId) {
+                return res.status(400).json({
+                    error: 'Email already exists'
+                });
+            }
+        }
+
+        user.name = name || user.name;
+        user.username = username || user.username;
+        user.email = email || user.email;
+
+        await user.save();
+
+        return res.json({
+            id: user.id,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            rol: user.rol,
+            created_at: user.created_at
+        });
+
+    } catch (error) {
+        console.error('Backend Error:', error);
+
+        return res.status(500).json({
+            error: 'Failed to update user'
+        });
+    }
+};
+
+export const adminUpdateRol = async (req, res) => {
+    const { id } = req.params;
+    const { rol } = req.body;
+
+    try {
+        if (
+            req.user.rol !== 'admin' &&
+            req.user.rol !== 'superAdmin'
+        ) {
+            return res.status(403).json({
+                error: 'No tienes permisos'
+            });
+        }
+
+        const validRoles = [
+            'user',
+            'teacher',
+            'admin',
+            'superAdmin'
+        ];
+
+        if (!validRoles.includes(rol)) {
+            return res.status(400).json({
+                error: 'Invalid role'
+            });
+        }
+
+        const user = await User.findByPk(id);
+
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        if (user.rol === 'superAdmin' && rol !== 'superAdmin') {
+            const superAdminCount = await User.count({
+                where: { rol: 'superAdmin' }
+            });
+
+            if (superAdminCount <= 1) {
+                return res.status(400).json({
+                    error: 'Debe existir al menos un superAdmin en el sistema'
+                });
+            }
+        }
+
+        if (
+            rol === 'superAdmin' &&
+            req.user.rol !== 'superAdmin'
+        ) {
+            return res.status(403).json({
+                error: 'Solo un superAdmin puede asignar ese rol'
+            });
+        }
+
+        if (user.rol === 'teacher' && rol !== 'teacher') {
             const assignedClasses = await Class.count({
                 where: {
                     teacher_id: user.id
@@ -120,64 +251,28 @@ export const updateUser = async (req, res) => {
             })
 
             if (assignedClasses > 0) {
-                return res.status(400).json({error: 'Cannot modify rol of teacher assigned to classes'})
-            } 
-        }
-
-        if (name && name.length < 3) {
-            return res.status(400).json({ error: 'Name must be at least 3 characters long' });
-        }
-
-        if (username){
-            if(username.length < 3) {
-                return res.status(400).json({error: 'Username must be atleast 3 characters long'});
-            }
-            const existingUser = await User.findOne({ where: { username } });
-            if (existingUser && existingUser.id !== parseInt(id)) {
-                return res.status(400).json({ error: 'Username already exists' });
+                return res.status(400).json({
+                    error: 'Cannot modify rol of teacher assigned to classes'
+                })
             }
         }
 
-        if(password && password.trim() !== ''){
-            if(password.length < 8) {
-                return res.status(400).json({ error: 'Password must be at least 8 characters long'})
-            }
+        user.rol = rol;
 
-            const saltRound = 10;
-            const salt = await bcrypt.genSalt(saltRound)
-            user.password = await bcrypt.hash(password, salt)
-        }
-
-        if(email) {
-            if (email && !/\S+@\S+\.\S+/.test(email)) {
-                return res.status(400).json({ error: 'Invalid email format' });
-            }
-            const existingEmail = await User.findOne({ where: { email } });
-            if (existingEmail && existingEmail.id !== parseInt(id)) {
-                return res.status(400).json({ error: 'Email already exists' });
-            } 
-        }
-
-        
-        user.name = name || user.name;
-        user.username = username || user.username;
-        user.email = email || user.email;
-        user.rol = rol || user.rol;
         await user.save();
 
-        const updatedUser = {
+        return res.json({
             id: user.id,
-            name: user.name,
             username: user.username,
-            email: user.email,
-            rol: user.rol,
-            created_at: user.created_at
-        }
-        res.json(updatedUser);
-        
+            rol: user.rol
+        });
+
     } catch (error) {
-        console.error("Backend Error: ", error);
-        res.status(500).json({ error: 'Failed to update user' });
+        console.error('Backend Error:', error);
+
+        return res.status(500).json({
+            error: 'Failed to update role'
+        });
     }
 };
 
@@ -205,6 +300,18 @@ export const deleteUser = async (req, res) => {
             if (assignedClasses > 0) {
                 return res.status(400).json({error: 'Cannot delete user assigned as teacher to classes'})
             } 
+        }
+
+        if (user.rol === 'superAdmin') {
+            const superAdminCount = await User.count({
+                where: { rol: 'superAdmin' }
+            });
+
+            if (superAdminCount <= 1) {
+                return res.status(400).json({
+                    error: 'Debe existir al menos un superAdmin en el sistema'
+                });
+            }
         }
         
         await user.destroy()

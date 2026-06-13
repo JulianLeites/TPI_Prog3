@@ -11,6 +11,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import notification from '../../utils/toast';
 
+import { updateUserRolApi } from '../../services/userService.js'
+
 const UserManagement = () => {
     const { user } = useAuth();
     const [users, setUsers] = useState([]);
@@ -123,65 +125,19 @@ const UserManagement = () => {
         }
     }
 
-    const updateUserRol = async (userId, newRol) => {
-        const token = localStorage.getItem('token')
-        try {
-            const response = await fetch(`http://localhost:3000/profile/users/${userId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({rol: newRol})
-            })
-            const comfirmation = await response.json()
-            if (!response.ok) {
-                throw new Error('Failed to update user rol');
-            }
-            return true;
-
-        } catch (error) {
-            console.error("fail updating user rol ", error )
-        }
-    }
-
-    const handlePromoteUser = async (user, newRol) => {
-        const successful = await updateUserRol(user.id, newRol)
-        if (successful){   
-            const updatedUsers = users.map(u => {
-                if(u.id === user.id) {
-                    return {...u, rol: newRol};
-                }
-                return u;
-            });
-            console.log(`Usuario con ID ${user.id} ascendido a ${newRol}`);
-            setUsers(updatedUsers);
-            notification.success('Rol modificado con exito')
-        } else {
-            notification.error('Error al modificar el rol')
-        }
-    }
-
-    const handleDemoteUser = async (user, newRol) => {
+    const updateUserRol = async (user, newRol) => {
         if(user.rol === 'superAdmin' && users.filter(u => u.rol === 'superAdmin').length <= 1) {
             notification.warning('No se puede degradar al ultimo superAdmin')
             return;
         }
 
-        const successful = await updateUserRol(user.id, newRol)
-
-        if (successful){
-            const updatedUsers = users.map(u => {
-                if(u.id === user.id) {
-                    return {...u, rol: newRol};
-                }
-                return u;
-            });
-        console.log(`Usuario con ID ${user.id} degradado a ${newRol}`);
-        setUsers(updatedUsers);
-        notification.success('Rol modificado con exito')
-        } else {
-            notification.error('Error al modificar el rol')
+        try{
+            await updateUserRolApi(user.id, newRol)
+            setUsers(prevUsers => prevUsers.map(u => u.id === user.id ? {...u, rol: newRol} : u))
+            notification.success('Rol modificado con exito')    
+        } catch (error) {
+            console.error('Fail updating user rol', error)
+            notification.error(error.message || 'Error al modificar el rol')
         }
     }
 
@@ -210,6 +166,40 @@ const UserManagement = () => {
         )
     }
 
+    const UserRowItem = ({ user }) => {
+        const rolesDisponibles = [
+            { rol: 'superAdmin', label: 'Ascender a SuperAdmin' },
+            { rol: 'admin', label: 'Ascender/Degradar a Admin' },
+            { rol: 'teacher', label: 'Ascender/Degradar a Teacher' },
+            { rol: 'user', label: 'Degradar a User' }
+        ]
+        return (
+            <ListGroup.Item className='user-list-item bg-light d-flex flex-row justify-content-around align-items-center'>
+                <Row className="w-100">
+                    <Col className='user-info'><p className='mb-0 text-center'>{user.name}</p></Col>
+                    <Col className='user-info'><p className='mb-0 text-center'>{user.username}</p></Col>
+                    <Col className='user-info'><p className='mb-0 text-center'>{user.id}</p></Col>
+                </Row>
+                
+                <Dropdown drop="end" style={{ display: 'inline-block' }}>
+                    <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
+                        <SlOptionsVertical />
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        {rolesDisponibles.filter(r => r.rol !== user.rol).map(r => (
+                            <Dropdown.Item key={r.rol} onClick={() => updateUserRol(user, r.rol)}>
+                                {r.label}
+                            </Dropdown.Item>
+                        ))}
+                        <Dropdown.Divider/>
+                        <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>Eliminar</Dropdown.Item>
+                        <Dropdown.Item onClick={() => navigate(`/profile/${user.id}`)}>Ver Perfil</Dropdown.Item>
+                    </Dropdown.Menu>
+                </Dropdown>
+            </ListGroup.Item>
+        )
+    }
+
   return (
     <div>
         <NavBar />
@@ -224,6 +214,7 @@ const UserManagement = () => {
                 Crear Usuario
             </Button>
 
+            {/* Barra de Busqueda */}
             <div className='mb-3 d-flex flex-column justify-content-center align-items-center'>
                 <Form.Control
                     type="text"
@@ -240,36 +231,7 @@ const UserManagement = () => {
                         ) : (
                             <ListGroup variant='flush' style={{borderRadius: '20px'}} className='border bg-light'>
                                 {filteredUsers.map(u => (
-                                    <ListGroup.Item key={user.id} className='user-search-list-item bg-light d-flex flex-row justify-content-around align-items-center'>
-                                        <Row>
-                                            <Col className='user-info'>
-                                                <p className='mb-0 text-center'>{u.name}</p>
-                                            </Col>
-                                            <Col className='user-info'>
-                                                <p className='mb-0 text-center'>{u.username}</p>
-                                            </Col>
-                                            <Col className='user-info'>
-                                                <p className='mb-0 text-center'>{u.id}</p>
-                                            </Col>
-                                        </Row>
-                                        <Dropdown drop="end" style={{ display: 'inline-block' }}>
-                                            <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
-                                                <SlOptionsVertical />
-                                            </Dropdown.Toggle>
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item onClick={() => handleDemoteUser(u, 'admin')}>Degradar a Admin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handleDemoteUser(u, 'teacher')}>Degradar a Teacher</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => handleDemoteUser(u, 'user')}>Degradar a User</Dropdown.Item>
-                                                <Dropdown.Divider/>
-                                                <Dropdown.Item onClick={(e) => handleDeleteUser(e, u)}>
-                                                    Eliminar
-                                                </Dropdown.Item>
-                                                <Dropdown.Item onClick={() => navigate(`/profile/${u.id}`)}>
-                                                    Ver Perfil
-                                                </Dropdown.Item>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    </ListGroup.Item>
+                                    <UserRowItem key={u.id} user={u}/>
                                 ))}
                             </ListGroup>  
                         )}
@@ -277,180 +239,35 @@ const UserManagement = () => {
                 )}
             </div>
 
-            
+            {/* Acordeones */}
             <div className='d-flex justify-content-center align-items-center gap-3' >
                 <Accordion alwaysOpen className='user-management-accordion'>
-                    <Accordion.Item className='accordeon-list' eventKey="0">
-                        <Accordion.Header className='user-list-header'>SuperAdmin ({users.filter(user => user.rol === 'superAdmin').length})</Accordion.Header>
-                        <Accordion.Body className='user-list'>
-                            { users.filter(user => user.rol === 'superAdmin').length > 0 ? (
-                                <ListGroup>
-                                    {users.filter(user => user.rol === 'superAdmin').map(user => (
-                                        <ListGroup.Item key={user.id} className='user-list-item bg-light'>
-                                            <Row>
-                                                <Col className='user-info'>
-                                                    <p className='mb-0 text-center'>{user.name}</p>
-                                                </Col>
-                                                <Col className='user-info'>
-                                                    <p className='mb-0 text-center'>{user.username}</p>
-                                                </Col>
-                                                <Col className='user-info'>
-                                                    <p className='mb-0 text-center'>{user.id}</p>
-                                                </Col>
-                                            </Row>
-                                            <Dropdown drop="end" style={{ display: 'inline-block' }}>
-                                                <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
-                                                    <SlOptionsVertical />
-                                                </Dropdown.Toggle>
-                                                <Dropdown.Menu>
-                                                    <Dropdown.Item onClick={() => handleDemoteUser(user, 'admin')}>Degradar a Admin</Dropdown.Item>
-                                                    <Dropdown.Item onClick={() => handleDemoteUser(user, 'teacher')}>Degradar a Teacher</Dropdown.Item>
-                                                    <Dropdown.Item onClick={() => handleDemoteUser(user, 'user')}>Degradar a User</Dropdown.Item>
-                                                    <Dropdown.Divider/>
-                                                    <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>
-                                                        Eliminar
-                                                    </Dropdown.Item>
-                                                    <Dropdown.Item onClick={() => navigate(`/profile/${user.id}`)}>
-                                                        Ver Perfil
-                                                    </Dropdown.Item>
-                                                </Dropdown.Menu>
-                                            </Dropdown>
-                                        </ListGroup.Item>
-                                    ))}
-                                </ListGroup>
-                            ) : (
-                                <p>No hay SuperAdmins registrados.</p>
-                            )}
-                        </Accordion.Body>
-                    </Accordion.Item>
-
-                    <Accordion.Item className='accordeon-list' eventKey="1">
-                        <Accordion.Header className='user-list-header'>Admin ({users.filter(user => user.rol === 'admin').length})</Accordion.Header>
-                        <Accordion.Body className='user-list'>
-                            { users.filter(user => user.rol === 'admin').length > 0 ? (
-                                <ListGroup>
-                                    {users.filter(user => user.rol === 'admin').map(user => (
-                                        <ListGroup.Item key={user.id} className='user-list-item bg-light'>
-                                            <Row>
-                                                <Col className='user-info'>
-                                                    <p className='mb-0 text-center'>{user.name}</p>
-                                                </Col>
-                                                <Col className='user-info'>
-                                                    <p className='mb-0 text-center'>{user.username}</p>
-                                                </Col>
-                                                <Col className='user-info'>
-                                                    <p className='mb-0 text-center'>{user.id}</p>
-                                                </Col>
-                                            </Row>
-                                            <Dropdown drop="end" style={{ display: 'inline-block' }}>
-                                                <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
-                                                    <SlOptionsVertical />
-                                                </Dropdown.Toggle>
-                                                <Dropdown.Menu>
-                                                    <Dropdown.Item onClick={() => handlePromoteUser(user, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
-                                                    <Dropdown.Item onClick={() => handleDemoteUser(user, 'teacher')}>Degradar a Teacher</Dropdown.Item>
-                                                    <Dropdown.Item onClick={() => handleDemoteUser(user, 'user')}>Degradar a User</Dropdown.Item>
-                                                    <Dropdown.Divider/>
-                                                    <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>Eliminar</Dropdown.Item>
-                                                    <Dropdown.Item onClick={() => navigate(`/profile/${user.id}`)}>
-                                                        Ver Perfil
-                                                    </Dropdown.Item>
-                                                </Dropdown.Menu>
-                                            </Dropdown>
-                                        </ListGroup.Item>
-                                    ))}
-                                </ListGroup>
-                            ) : (
-                                <p>No hay Admins registrados.</p>
-                            )}
-                        </Accordion.Body>
-                    </Accordion.Item>
-
-                    <Accordion.Item className='accordeon-list' eventKey="2">
-                        <Accordion.Header className='user-list-header'>Profesores ({users.filter(user => user.rol === 'teacher').length})</Accordion.Header>
-                        <Accordion.Body className='user-list'>
-                            { users.filter(user => user.rol === 'teacher').length > 0 ? (
-                                <ListGroup>
-                                    {users.filter(user => user.rol === 'teacher').map(user => (
-                                        <ListGroup.Item key={user.id} className='user-list-item bg-light'>
-                                            <Row>
-                                                <Col className='user-info'>
-                                                    <p className='mb-0 text-center'>{user.name}</p>
-                                                </Col>
-                                                <Col className='user-info'>
-                                                    <p className='mb-0 text-center'>{user.username}</p>
-                                                </Col>
-                                                <Col className='user-info'>
-                                                    <p className='mb-0 text-center'>{user.id}</p>
-                                                </Col>
-                                            </Row>
-                                            <Dropdown drop="end" style={{ display: 'inline-block' }}>
-                                                <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
-                                                    <SlOptionsVertical />
-                                                </Dropdown.Toggle>
-                                                <Dropdown.Menu>
-                                                    <Dropdown.Item onClick={() => handlePromoteUser(user, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
-                                                    <Dropdown.Item onClick={() => handlePromoteUser(user, 'admin')}>Ascender a Admin</Dropdown.Item>
-                                                    <Dropdown.Item onClick={() => handleDemoteUser(user, 'user')}>Degradar a User</Dropdown.Item>
-                                                    <Dropdown.Divider/>
-                                                    <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>
-                                                        Eliminar
-                                                    </Dropdown.Item>
-                                                    <Dropdown.Item onClick={() => navigate(`/profile/${user.id}`)}>
-                                                        Ver Perfil
-                                                    </Dropdown.Item>
-                                                </Dropdown.Menu>
-                                            </Dropdown>
-                                        </ListGroup.Item>
-                                    ))}
-                                </ListGroup>
-                            ) : (
-                                <p>No hay Profesores registrados.</p>
-                            )}
-                        </Accordion.Body>
-                    </Accordion.Item>
-
-                    <Accordion.Item className='accordeon-list' eventKey="3">
-                        <Accordion.Header className='user-list-header'>User ({users.filter(user => user.rol === 'user').length})</Accordion.Header>
-                        <Accordion.Body className='user-list'>
-                            { users.filter(user => user.rol === 'user').length > 0 ? (
-                                <ListGroup>
-                                    {users.filter(user => user.rol === 'user').map(user => (
-                                        <ListGroup.Item key={user.id} className='user-list-item bg-light'>
-                                            <Row>
-                                                <Col className='user-info'>
-                                                    <p className='mb-0 text-center'>{user.name}</p>
-                                                </Col>
-                                                <Col className='user-info'>
-                                                    <p className='mb-0 text-center'>{user.username}</p>
-                                                </Col>
-                                                <Col className='user-info'>
-                                                    <p className='mb-0 text-center'>{user.id}</p>
-                                                </Col>
-                                            </Row>
-                                            <Dropdown drop="end" style={{ display: 'inline-block' }}>
-                                                <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
-                                                    <SlOptionsVertical />
-                                                </Dropdown.Toggle>
-                                                <Dropdown.Menu>
-                                                    <Dropdown.Item onClick={() => handlePromoteUser(user, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
-                                                    <Dropdown.Item onClick={() => handlePromoteUser(user, 'admin')}>Ascender a Admin</Dropdown.Item>
-                                                    <Dropdown.Item onClick={() => handlePromoteUser(user, 'teacher')}>Ascender a Teacher</Dropdown.Item>
-                                                    <Dropdown.Divider/>
-                                                    <Dropdown.Item onClick={(e) => handleDeleteUser(e, user)}>Eliminar</Dropdown.Item>
-                                                    <Dropdown.Item onClick={() => navigate(`/profile/${user.id}`)}>
-                                                        Ver Perfil
-                                                    </Dropdown.Item>
-                                                </Dropdown.Menu>
-                                            </Dropdown>
-                                        </ListGroup.Item>
-                                    ))}
-                                </ListGroup>
-                            ) : (
-                                <p>No hay Users registrados.</p>
-                            )}
-                        </Accordion.Body>
-                    </Accordion.Item>
+                    {[
+                        { key: "0", rol: "superAdmin", label: "SuperAdmin" },
+                        { key: "1", rol: "admin", label: "Admin" },
+                        { key: "2", rol: "teacher", label: "Profesores" },
+                        { key: "3", rol: "user", label: "User" }
+                    ].map(({key, rol, label}) =>  {
+                        const filtered = users.filter(u => u.rol === rol)
+                        return (
+                            <Accordion.Item className='accordeon-list' eventKey={key} key={rol}>
+                                <Accordion.Header className='user-list-header'>
+                                    {label} ({filtered.length})
+                                </Accordion.Header>
+                                <Accordion.Body className='user-list'>
+                                    {filtered.length > 0 ? (
+                                        <ListGroup>
+                                            {filtered.map(user => (
+                                                <UserRowItem key={user.id} user={user}/>
+                                            ))}
+                                        </ListGroup>
+                                    ) : (
+                                        <p>No hay {label} registrados </p>
+                                    )}
+                                </Accordion.Body>
+                            </Accordion.Item>
+                        )
+                    })}
                 </Accordion>
                 </div>
             </div>

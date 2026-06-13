@@ -228,7 +228,7 @@ const Login = ({show, onHide}) => {
           )}
           <div className='text-center mt-3'>
             <small className='text-muted'>
-              {isLoginMode ? '¿Aún no tienes cuenta?' : '¿Ya tienes cuenta?'}
+              {isLoginMode ? '¿Aún no tienes cuenta? ' : '¿Ya tienes cuenta? '}
               <Button
                 type='button'
                 variant='link'

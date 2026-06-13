@@ -7,7 +7,8 @@ import {
     updateUser,
     deleteUser,
     loginUser,
-    getUserProfile
+    getUserProfile,
+    adminUpdateRol
 } from '../controllers/userController.js';
 
 const router = Router();
@@ -23,7 +24,8 @@ router.get('/verify', verifyToken, (req, res) => {
 
 router.get('/users', verifyToken, getAllUsers);
 router.get('/users/:id', verifyToken, getUserById);
-router.put('/users/:id', verifyToken, updateUser);
+router.put('/users', verifyToken, updateUser);
+router.put('/users/:id', verifyToken, adminUpdateRol);
 router.delete('/users/:id', verifyToken, deleteUser);
 
 router.get('/', verifyToken, getUserProfile)
