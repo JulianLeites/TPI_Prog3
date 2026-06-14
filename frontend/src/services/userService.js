@@ -99,3 +99,23 @@ export const getProfileApi = async (userId = null) => {
 
     return await response.json()
 }
+
+export const createUserApi = async (formData) => {
+    const token = localStorage.getItem('token')
+
+    const response = await fetch('http://localhost:3000/profile/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+    });
+
+    if(!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to create user');
+    }
+
+    return await response.json()
+}

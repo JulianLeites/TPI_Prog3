@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import notification from '../../utils/toast';
 
-import { updateUserRolApi } from '../../services/userService.js'
+import { updateUserRolApi, getUsersApi, createUserApi, deleteUserApi } from '../../services/userService.js'
 
 const UserManagement = () => {
     const { user } = useAuth();
@@ -29,20 +29,10 @@ const UserManagement = () => {
 
     useEffect(() => {
         const fetchUsers = async () => {
-            const token = localStorage.getItem('token')
             try {
-                const response = await fetch('http://localhost:3000/profile/users', {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error('Failed to fetch users');
-                }
-                const data = await response.json();
-                setUsers(data);
-                setLoading(false);
+                const users = await getUsersApi()
+                setUsers(users);
+                setLoading(false);  
             } catch (error) {
                 setError(error.message);
                 setLoading(false);
@@ -53,22 +43,7 @@ const UserManagement = () => {
 
     const handleRegisterUser = async (formData) => {
         try {
-            const token = localStorage.getItem('token')
-            const response = await fetch('http://localhost:3000/profile/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if(!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || 'Failed to create user');
-            }
-
-            const newUser = await response.json()
+            const newUser = await createUserApi(formData)
 
             setUsers((prevUsers) => [...prevUsers, newUser]);
 
@@ -81,32 +56,18 @@ const UserManagement = () => {
     }
 
     const confirmElimination = async (data) => {
-        const token = localStorage.getItem('token')
-
         if (data.confirmation === "ELIMINAR") {
-            console.log(`Usuario con ID ${selectedUser.id} eliminado`);
             setShowDeleteModal(false);
             try {
-                const response = await fetch(`http://localhost:3000/profile/users/${selectedUser.id}`,{
-                    method: "DELETE",
-                    headers : {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                })
+                await deleteUserApi(selectedUser.id)
 
-                if(!response.ok) {
-                    throw new Error ('Failed to delete user');
-                }
-
-                const updatedUsers = users.filter(u => u.id !== selectedUser.id);
-                setUsers(updatedUsers)
+                setUsers(users.filter(u => u.id !== selectedUser.id))
 
                 notification.success('Usuario eliminadao con exito')
 
                 setSelectedUser(null)
             } catch (error) {
-                console.error('Failure deleting de use', error)
+                console.error('Failure deleting user', error)
                 notification.error('No se pudo eliminar el usuario')
             }
         }
