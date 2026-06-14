@@ -6,7 +6,7 @@ import ModalBuyMembership from "../UI/ModalBuyMembership";
 import ModalNewMembership from "../UI/ModalNewMembership";
 import Footer from "../UI/Footer";
 import NavBar from "../UI/NavBar";
-import ModalDeleteClass from "../UI/ModalDeleteClass";
+import ModalDelete from "../UI/ModalDelete";
 import DefaultImage from '../../assets/img/MembershipDefaultImage.jpg'
 import { useAuth } from "../../context/AuthContext";
 import notification from "../../utils/toast";
@@ -290,10 +290,11 @@ function Membership() {
         membershipEdit={membershipEdit}
       />
 
-      <ModalDeleteClass
+      <ModalDelete
         show={showDeleteModal}
         onHide={() => setShowDeleteModal(false)}
         onConfirmDelete={handleConfirmDelete}
+        message='Membresia'
       />
     </>
   );

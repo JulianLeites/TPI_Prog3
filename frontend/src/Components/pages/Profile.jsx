@@ -5,8 +5,7 @@ import Footer from '../UI/Footer'
 import { FaRegUserCircle } from "react-icons/fa";
 import { useState, useEffect } from 'react';
 import DefaultImage from '../../assets/img/MembershipDefaultImage.jpg'
-import ModalCancelMembership from '../UI/ModalCancelMembership';
-import ModalLeaveClass from '../UI/ModalLeaveClass';
+import ModalCancel from '../UI/ModalCancel.jsx';
 import ModalEditProfile from '../UI/ModalEditProfile';
 import ModalEliminateUser from '../UI/ModalEliminateUser';
 import { useAuth } from '../../context/AuthContext';
@@ -37,9 +36,9 @@ const Profile = () => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [showCancelModal, setShowCancelModal] = useState(false)
-    const [showLeaveClassModal, setShowLeaveClassModal] = useState(false)
     const [showEditProfile, setShowEditProfile] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [message, setMessage] = useState(null)
 
     const [selectedClass, setSelectedClass] = useState(null)
     const [profileEdit, setProfileEdit] = useState(null)
@@ -208,12 +207,19 @@ const Profile = () => {
             notification.error('Error al cancelar la membresia')
         } finally {
             setShowCancelModal(false)
+            setMessage(null)
         }
+    }
+
+    const handleOpenCancelMembership = () => {
+        setMessage('Membresia')
+        setShowCancelModal(true)
     }
 
     const handleOpenLeaveClass = (enrollment) => {
         setSelectedClass(enrollment)
-        setShowLeaveClassModal(true)
+        setMessage('Clase')
+        setShowCancelModal(true)
     }
 
     const handleLeaveClass = async () => {
@@ -246,7 +252,8 @@ const Profile = () => {
             console.error('Failure leaving class', error)
             notification.error('No se pudo dar de baja de la clase, intente de nuevo')
         }
-        setShowLeaveClassModal(false);
+        setShowCancelModal(false);
+        setMessage(null)
     }
 
     const handleOpenEditProfile = (profile) => {
@@ -520,7 +527,7 @@ const Profile = () => {
                                                     variant="outline-danger" 
                                                     size="sm" 
                                                     className="mt-auto w-100 fe-bold"
-                                                    onClick={() => setShowCancelModal(true)}
+                                                    onClick={handleOpenCancelMembership}
                                                     disabled={isAlreadyCanceled}
                                                 >
                                                     {isAlreadyCanceled ? 'Suscripcion Cancelada' : 'Cancelar Suscripcion'}
@@ -658,19 +665,14 @@ const Profile = () => {
                     </Swiper>
                 )}
             </div>
-            </Container>
+        </Container>
             
-            <ModalCancelMembership
+        <ModalCancel
             show={showCancelModal}
             onHide={() => setShowCancelModal(false)}
-            onConfirmCancel={handleCancelMembership}
-        />
-
-        <ModalLeaveClass
-            show={showLeaveClassModal}
-            onHide={() => setShowLeaveClassModal(false)}
-            onConfirmLeave={handleLeaveClass}
-            clase={selectedClass?.Class}
+            onConfirmCancelMembership={handleCancelMembership}
+            onConfirmCancelClass={handleLeaveClass}
+            message={message}
         />
 
         <ModalEditProfile

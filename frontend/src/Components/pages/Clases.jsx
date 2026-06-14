@@ -4,7 +4,7 @@ import { Container, Row, Col, Card, Button, Badge, Spinner, Dropdown, Accordion,
 import NavBar from '../UI/NavBar';
 import ModalClase from '../UI/ModalClase';
 import Footer from '../UI/Footer';
-import ModalDeleteClass from '../UI/ModalDeleteClass';
+import ModalDelete from '../UI/ModalDelete';
 import { useAuth } from '../../context/AuthContext';
 import notification from '../../utils/toast';
 
@@ -493,10 +493,11 @@ const Clases = () => {
                 teachers={teachers}
             />
 
-            <ModalDeleteClass
+            <ModalDelete
                 show={showDeleteModal}
                 onHide={() => setShowDeleteModal(false)}
                 onConfirmDelete={handleConfirmDelete}
+                message='Clase'
             />
             <Footer />
         </>

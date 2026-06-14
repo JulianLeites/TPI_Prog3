@@ -62,8 +62,13 @@
     justify-content: space-between;
     border-left: none;
     border-right: none;
-    border-top-left-radius: 0px !important;
-    border-top-right-radius: 0px !important;
+    /* border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important; */
+}
+
+.user-management-accordion .user-list-item {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
 }
 
 .user-list-item:last-child {
