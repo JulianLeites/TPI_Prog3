@@ -8,6 +8,10 @@ import ModalDelete from '../UI/ModalDelete';
 import { useAuth } from '../../context/AuthContext';
 import notification from '../../utils/toast';
 
+import { getClassesApi, createClassApi, updateClassApi, deleteClassApi } from '../../services/classService';
+import { getUsersApi } from '../../services/userService';
+import { assignUserToClassApi } from '../../services/userClassService';
+
 import { IoOptions } from "react-icons/io5";
 
 const Clases = () => {
@@ -41,16 +45,11 @@ const Clases = () => {
     useEffect (() => {
         const fetchClasses = async () => {
             try {
-                const response = await fetch('http://localhost:3000/classes')
-
-                if(!response.ok){
-                    throw new Error('Error getting Classes')
-                }
-                const data = await response.json()
+                const data = await getClassesApi()
                 setClasses(data)
-                setLoading(false)
-            } catch (error) {
+            } catch (error) {   
                 console.error(error.message);
+            } finally {
                 setLoading(false)
             }
         };
@@ -60,25 +59,11 @@ const Clases = () => {
     useEffect (() => {
         const fetchTeachers = async () => {
             try {
-                const token = localStorage.getItem('token')
+                const users = await getUsersApi()
 
-                const response = await fetch ('http://localhost:3000/profile/users', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                if (!response.ok){
-                    throw new Error ('Error al obtener usuarios')
+                if(Array.isArray(users)){
+                    setTeachers(users.filter(u => u.rol === "teacher"))
                 }
-                const data = await response.json();
-
-                if(Array.isArray(data)){
-                    const filteredTeachers = data.filter(u => u.rol === "teacher")
-                    setTeachers(filteredTeachers)
-                }
-
             } catch (error) {
                 console.error('Error getting teachers', error)
             }
@@ -109,38 +94,12 @@ const Clases = () => {
             const token = localStorage.getItem('token')
 
             if(classEdit.id){
-                const response = await fetch(`http://localhost:3000/classes/${classEdit.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                if(!response.ok) {
-                    throw new Error ('Failed to update class');
-                }
-
-                const editedClass = await response.json();
+                const editedClass = await updateClassApi(classEdit.id, formData)
 
                 setClasses(classes.map(c => c.id === classEdit.id ? editedClass : c))
                 notification.success('Clase editada con exito')
             } else {
-                const response = await fetch(`http://localhost:3000/classes`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(formData)
-                })
-
-                if (!response.ok) {
-                    throw new Error('Failed to create class');
-                }
-
-                const newClass = await response.json();
+                const newClass = await createClassApi(formData)
 
                 setClasses([...classes, newClass]);
                 notification.success('Clase creada con exito')
@@ -161,21 +120,9 @@ const Clases = () => {
 
     const handleConfirmDelete = async () => {
         try {
-            const token = localStorage.getItem('token')
-
-            const response = await fetch(`http://localhost:3000/classes/${selectedClass}`, {
-                method: "DELETE",
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-
-            if(!response.ok) {
-                throw new Error('Failed to delete class');
-            }
-
-            const updateClasses = classes.filter(c => c.id !== selectedClass);
-            setClasses(updateClasses);
+            await deleteClassApi(selectedClass)
+            
+            setClasses(classes.filter(c => c.id !== selectedClass));
 
             setSelectedClass(null);
             notification.success('Clase eliminada con exito')
@@ -188,40 +135,23 @@ const Clases = () => {
 
     const handleInscription = async (clase) => {
         try {
-            const token = localStorage.getItem('token')
-
-            if(!user || !user.id) {
+            if(!user?.id) {
                 throw new Error('You must login to sing up for a class')
             }
 
-            if(!clase || !clase.id) {
+            if(!clase?.id) {
                 throw new Error('Invalid class selected')
             }
-
-            const response = await fetch(`http://localhost:3000/profile/classes/assign/${clase.id}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-
-            const resData = await response.json()
-
-            if(!response.ok){
-                throw new Error(resData.message || 'Error procesing class')
-            }
-
+            
+            const resData = await assignUserToClassApi(clase.id)
+            
             notification.success('Inscripcion Completada')
 
             setClasses(prevClases =>
                 prevClases.map(c => c.id === clase.id ? {...c, capacity: c.capacity-1} : c)
             )
-            
-            console.log('Inscripcion exitosa: ', resData.userClass)
         } catch(error) {
-            notification.error('Hubo un error en la inscripcion, intente de nuevo')
-            throw error
+            console.error('Hubo un error en la inscripcion, intente de nuevo')
         }
 
         await new Promise((resolve) => setTimeout(resolve, 1000))
