@@ -57,7 +57,7 @@ const ModalClase = ({ show, onHide, classEdit, setClassEdit, onSave, teachers = 
     }
 
     return (
-        <Modal show={show} onHide={onHide} centered backdrop="static">
+        <Modal show={show} onHide={onHide} centered backdrop="static" keyboard={false}>
             <Modal.Header closeButton>
                 <Modal.Title>
                     {classEdit.id ? 'Editar Clase' : 'Crear Nueva Clase'}
