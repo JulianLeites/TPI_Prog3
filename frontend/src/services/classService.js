@@ -62,3 +62,21 @@ export const deleteClassApi = async (id) => {
 
     return await response.json()
 }
+
+export const getTeacherClassApi = async (teacherId) => {
+    const token = localStorage.getItem('token')
+
+    const response = await fetch(`http://localhost:3000/classes/teacher/${teacherId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+
+    if(!response.ok){
+        throw new Error('Cannot get teacher classes')
+    }
+
+    return await response.json()
+} 

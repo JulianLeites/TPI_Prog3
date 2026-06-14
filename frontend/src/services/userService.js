@@ -79,3 +79,23 @@ export const deleteUserApi = async (userId) => {
 
     return true;
 };
+
+export const getProfileApi = async (userId = null) => {
+    const token = localStorage.getItem('token')
+
+    const url = userId ? `http://localhost:3000/profile/${userId}` : 'http://localhost:3000/profile'
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+
+    if(!response.ok){
+        throw new Error('Cannot get profile data')
+    }
+
+    return await response.json()
+}
