@@ -15,7 +15,10 @@ import notification from '../../utils/toast';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 
-import { updateUserRolApi, editUserProfileApi, deleteUserApi} from '../../services/userService.js'
+import { updateUserRolApi, editUserProfileApi, deleteUserApi, getProfileApi, getUsersApi} from '../../services/userService.js'
+import { getTeacherClassApi } from '../../services/classService.js';
+import { getUserMembershipApi, cancelMembershipApi } from '../../services/userMembershipService.js';
+import { getUSerClassesApi, leaveClassApi } from '../../services/userClassService.js';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -54,76 +57,19 @@ const Profile = () => {
         const fetchProfile = async () => {
             setLoading(true)
             setError(null)
-            const token = localStorage.getItem('token')
-
-            const profileUrl = isViewingOther ? `http://localhost:3000/profile/${id}` : 'http://localhost:3000/profile'
-            const membershipUrl = isViewingOther ? `http://localhost:3000/profile/memberships/user/${id}` : 'http://localhost:3000/profile/memberships'
-            const classesUrl = isViewingOther ? `http://localhost:3000/profile/classes/user/${id}` : 'http://localhost:3000/profile/classes'
 
             try{
-                const response = await fetch(profileUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
+                const profile = await getProfileApi(isViewingOther ? id : null)
+                setProfileData(profile)
 
-                if(!response.ok){
-                    throw new Error('Cannot get profile data')
-                }
-
-                const data = await response.json()
-                setProfileData(data)
-
-                if(data.rol !== 'user'){
-                    const teacherUrl = `http://localhost:3000/classes/teacher/${data.id}`
-                    const teacherResponse = await fetch(teacherUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    })
-    
-                    if(!teacherResponse.ok){
-                        throw new Error('Cannot get teacher classes')
-                    }
-                    const tData = await teacherResponse.json()
-                    setTeacherData(tData)
+                if(profile.rol !== 'user'){
+                    setTeacherData(await getTeacherClassApi(profile.id))
                 } else{
                     setTeacherData([])
                 }
+                setMembershipData(await getUserMembershipApi(isViewingOther ? id : null))
 
-
-                const membershipResponse = await fetch(membershipUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-
-                if(!membershipResponse.ok){
-                    throw new Error('Cannot get membership data')
-                }
-
-                const mData = await membershipResponse.json()
-                setMembershipData(mData)
-
-                const classesResponse = await fetch(classesUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-
-                if(!classesResponse.ok){
-                    throw new Error('Cannot get classes data')
-                }
-
-                const cData = await classesResponse.json()
+                const cData = await getUSerClassesApi(isViewingOther ? id : null)
                 
                 if(Array.isArray(cData)){
                     setClassesData(cData)
@@ -144,23 +90,10 @@ const Profile = () => {
 
         const fetchTeachers = async () => {
             try {
-                const token = localStorage.getItem('token')
+                const users = await getUsersApi()
 
-                const response = await fetch ('http://localhost:3000/profile/users', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                if (!response.ok){
-                    throw new Error ('Error al obtener usuarios')
-                }
-                const data = await response.json();
-
-                if(Array.isArray(data)){
-                    const filteredTeachers = data.filter(u => u.rol === "teacher")
-                    setTeachers(filteredTeachers)
+                if(Array.isArray(users)){
+                    setTeachers(users.filter(u => u.rol === "teacher"))
                 }
 
             } catch (error) {
@@ -176,19 +109,7 @@ const Profile = () => {
         const cancelUrl = isViewingOther ? `http://localhost:3000/profile/memberships/cancel/${id}` : 'http://localhost:3000/profile/memberships/cancel'
 
         try {
-            const response = await fetch(cancelUrl, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            })
-
-            const resData = await response.json()
-
-            if(!response.ok) {
-                throw new Error(resData.message || 'Error canceling membership')
-            }
+            const data = await cancelMembershipApi(isViewingOther ? id : null)
 
             setMembershipData(prevData => {
                 if(Array.isArray(prevData)) {
@@ -226,24 +147,11 @@ const Profile = () => {
         if(!selectedClass || !selectedClass.Class) return;
         
         try {
-            const token = localStorage.getItem('token')
             const classId = selectedClass.Class.id
-            const leaveClassUrl = isViewingOther ? `http://localhost:3000/profile/classes/${classId}/user/${id}` : `http://localhost:3000/profile/classes/${classId}`
 
-            const response = await fetch(leaveClassUrl, {
-                method: "DELETE",
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            })
+            await leaveClassApi(isViewingOther ? id : null, classId)
 
-            if(!response.ok) {
-                throw new Error('Failed to leave class');
-            }
-
-            const updateClasses = classesData.filter(c => c.id !== selectedClass.id);
-            setClassesData(updateClasses);
+            setClassesData(classesData.filter(c => c.id !== selectedClass.id));
 
             notification.success('Baja de la clase con procesada exito')
 

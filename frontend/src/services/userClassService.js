@@ -15,3 +15,43 @@ export const assignUserToClassApi = async (classId) => {
 
     return await response.json()
 }
+
+export const getUSerClassesApi = async (userId = null) => {
+    const token = localStorage.getItem('token')
+
+    const url = userId ? `http://localhost:3000/profile/classes/user/${userId}` : 'http://localhost:3000/profile/classes'
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+
+    if(!response.ok){
+        throw new Error('Cannot get classes data')
+    }
+
+    return await response.json()
+}
+
+export const leaveClassApi = async (userId = null, classId) => {
+    const token = localStorage.getItem('token')
+
+    const url = userId ? `http://localhost:3000/profile/classes/${classId}/user/${userId}` : `http://localhost:3000/profile/classes/${classId}`
+
+    const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+
+    if(!response.ok) {
+        throw new Error('Failed to leave class');
+    }
+
+    return await response.json()
+}
