@@ -6,6 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '../../context/AuthContext'
 import notification from '../../utils/toast'
 
+import { loginApi, createUserApi } from '../../services/userService'
+
 const loginSchema = z
   .object({
     username: z.string().min(1, "Nombre de usuario requerido"),
@@ -51,19 +53,7 @@ const Login = ({show, onHide}) => {
 
   const onLoginSubmit = async (data) => {
     try {
-      const response = await fetch('http://localhost:3000/profile/login', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-      })
-
-      const resData = await response.json();
-
-      if(!response.ok) {
-        throw new Error(resData.error || 'Credenciales incorrectas')
-      }
+      const resData = await loginApi(data)
 
       const tokenParts = resData.token.split('.')
       const encodedPayLoad = tokenParts[1]
@@ -87,19 +77,7 @@ const Login = ({show, onHide}) => {
         name: `${name} ${surname}`
       }
 
-      const response = await fetch('http://localhost:3000/profile/register', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(dataForBackend),
-      })
-
-      const resData = await response.json();
-
-      if(!response.ok){
-        throw new Error(resData.error || 'Error al registrar usuario')
-      }
+      await createUserApi(dataForBackend)
 
       setIsLoginMode(true)
       notification.success('Has creado tu cuenta, ya puedes iniciar sesion')

@@ -103,18 +103,36 @@ export const getProfileApi = async (userId = null) => {
 export const createUserApi = async (formData) => {
     const token = localStorage.getItem('token')
 
+    const headers = {'Content-Type': 'application/json'}
+    if (token) {
+        headers.Authorization = `Bearer ${token}`
+    }
+
     const response = await fetch('http://localhost:3000/profile/register', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
+        headers,
         body: JSON.stringify(formData)
     });
 
     if(!response.ok) {
         const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.error || 'Failed to create user');
+    }
+
+    return await response.json()
+}
+
+export const loginApi = async (credentials) => {
+    const response = await fetch('http://localhost:3000/profile/login', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+    })
+
+    if(!response.ok) {
+        throw new Error('Credenciales incorrectas')
     }
 
     return await response.json()
