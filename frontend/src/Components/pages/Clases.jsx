@@ -151,7 +151,7 @@ const Clases = () => {
                 prevClases.map(c => c.id === clase.id ? {...c, capacity: c.capacity-1} : c)
             )
         } catch(error) {
-            console.error('Hubo un error en la inscripcion, intente de nuevo')
+            notification.error('Hubo un error en la inscripcion, intente de nuevo')
         }
 
         await new Promise((resolve) => setTimeout(resolve, 1000))

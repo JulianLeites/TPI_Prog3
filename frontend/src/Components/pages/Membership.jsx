@@ -11,6 +11,8 @@ import DefaultImage from '../../assets/img/MembershipDefaultImage.jpg'
 import { useAuth } from "../../context/AuthContext";
 import notification from "../../utils/toast";
 
+import { getMembershipsApi, updateMembershipImageApi, createMembershipApi, updateMembershipApi, deleteMembershipApi } from "../../services/membershipServices";
+import { assignUserToMembershipApi } from "../../services/userMembershipService";
 
 function Membership() {
   const { user, loading: authLoading } = useAuth()
@@ -34,16 +36,11 @@ function Membership() {
   useEffect (() => {
     const fetchMemberships = async () => {
       try {
-        const response = await fetch('http://localhost:3000/memberships')
-
-        if(!response.ok){
-          throw new Error('Error getting Memberships')
-        }
-        const data = await response.json()
+        const data = await getMembershipsApi()
         setMemberships(data)
-        setLoading(false)
       } catch (error) {
         console.error(error.message);
+      } finally {
         setLoading(false)
       }
     };
@@ -52,8 +49,6 @@ function Membership() {
 
   const handleBuySubmit = async (data) => {
     try {
-      const token = localStorage.getItem('token')
-
       if(!user || !user.id) {
         throw new Error('You must login to adquiere a membership')
       }
@@ -61,31 +56,16 @@ function Membership() {
       if(!selectedMembership || !selectedMembership.id){
         throw new Error('Invalid membership selected')
       }
-
-      const response = await fetch(`http://localhost:3000/profile/memberships/assign/${selectedMembership.id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(data)
-      })
-
-      const resData = await response.json()
-
-      if(!response.ok){
-        throw new Error(resData.message || 'Error procesing membeship')
-      }
+      
+      const resData = await assignUserToMembershipApi(selectedMembership.id, data)
 
       notification.success('Suscripcion realizada con exito')
     } catch (error) {
-      notification.success('Error al suscribirse, intente de nuevo')
+      notification.error('Error al suscribirse, intente de nuevo')
       throw error
     }
 
     await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    console.log('datos recibidos en membership: ', data)
   }
 
   const handleSuscript = (membership) => {
@@ -103,69 +83,33 @@ function Membership() {
   }
 
   const handleSave = async (formData) => {
-    const token = localStorage.getItem('token')
-
-    let finalImageUrl = membershipEdit.imageUrl || null;
-    if(formData.imageFile) {
-      const cloudinaryData = new FormData();
-      cloudinaryData.append('file', formData.imageFile);
-      cloudinaryData.append('upload_preset', 'images_memberships')
-
-      const cloudRes = await fetch("https://api.cloudinary.com/v1_1/dq5k1qn0e/image/upload", {
-        method: "POST",
-        body: cloudinaryData
-      });
-      const cloudJson = await cloudRes.json();
-      finalImageUrl = cloudJson.secure_url;
-    }
-
-    const dataToSend = {
-      name: formData.name,
-      price: formData.price,
-      duration: formData.duration,
-      max_classes: formData.max_classes,
-      imageUrl: finalImageUrl
-    }
-
     try {
+      let finalImageUrl = membershipEdit.imageUrl || null;
+
+      if(formData.imageFile) {
+        finalImageUrl = await updateMembershipImageApi(formData.imageFile)
+      }
+
+      const dataToSend = {
+        name: formData.name,
+        price: formData.price,
+        duration: formData.duration,
+        max_classes: formData.max_classes,
+        imageUrl: finalImageUrl
+      }
+
       if(membershipEdit.id){
-        const response = await fetch(`http://localhost:3000/memberships/${membershipEdit.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(dataToSend)
-        });
-
-        if(!response.ok){
-          throw new Error('Failed to update membeship')
-        }
-
-        const editedMembeship = await response.json();
-
-        notification.success('Membresia Actualizada con exito')
+        const editedMembeship = await updateMembershipApi(membershipEdit.id, dataToSend)
 
         setMemberships(memberships.map(m => m.id === membershipEdit.id ? editedMembeship : m))
+        
+        notification.success('Membresia Actualizada con exito')
       } else {
-        const response = await fetch('http://localhost:3000/memberships', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(dataToSend)
-        });
-        
-        if(!response.ok) {
-          throw new Error ('Failed creating membership')
-        }
-        
-        const newMembership = await response.json();
+        const newMembership = await createMembershipApi(dataToSend)
 
-        notification.success('Membresia creada con exito')
+        setMemberships(prev => [...prev, newMembership]);
         
-        setMemberships([...memberships, newMembership]);
+        notification.success('Membresia creada con exito')
       }
         setShowNewMembershipModal(false);
     } catch (error) {
@@ -180,31 +124,20 @@ function Membership() {
   };
 
   const handleConfirmDelete = async () => {
-    const token = localStorage.getItem('token')
-        try {
-            const response = await fetch(`http://localhost:3000/memberships/${selectedMembership}`, {
-                method: "DELETE",
-                headers: {
-                  'Authorization': `Bearer ${token}`
-                }
-            })
+      try {
+        await deleteMembershipApi(selectedMembership)
 
-            if(!response.ok) {
-                throw new Error('Failed to delete membership');
-            }
+        setMemberships(prev => prev.filter(m => m.id !== selectedMembership));
 
-            const updateMembership = memberships.filter(m => m.id !== selectedMembership);
-            setMemberships(updateMembership);
+        notification.success('Membresia eliminada con exito')
 
-            notification.success('Membresia eliminada con exito')
-
-            setSelectedMembership(null);
-        } catch(error) {
-            console.error('Failure deliting membership', error)
-            notification.error('No se pudo eliminar la membresia, intente de nuevo')
-        }
-        setShowDeleteModal(false);
-    };
+        setSelectedMembership(null);
+    } catch(error) {
+        console.error('Failure deliting membership', error)
+        notification.error('No se pudo eliminar la membresia, intente de nuevo')
+    }
+    setShowDeleteModal(false);
+  };
 
   if (loading || authLoading) {
         return(
