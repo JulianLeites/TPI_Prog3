@@ -451,9 +451,10 @@ const Profile = () => {
             </Row>
 
             {/* Clases asignadas a profesores */}
-            {isNotUser && (
+            {profileData.rol === 'teacher' && (
                 <div className='mb-5'>
                     <h4 className="mb-4 text-secondary text-uppercase fw-bold" style={{ letterSpacing: '1px' }}>
+                        
                         {isViewingOther ? (
                             'Clases Asignadas'
                         ) : (
@@ -474,27 +475,20 @@ const Profile = () => {
                                 <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
                                     <Card.Body className='d-flex flex-column p-4'>
                                         <div className='d-flex justify-content-between align-items-start mb-2'>
-                                            <Card.Title className='fw-bold mb-0 text-dark' style={{ fontSize: '1.15rem' }}>
-                                                {tClasses.name}
-                                            </Card.Title>
-                                            <Badge bg='success' className='px-2 py-1'>Dictando</Badge>
+                                                <span
+                                                    className='fw-bold mb-0 text-dark'
+                                                    style={{ cursor:'pointer', fontSize: '1.15rem' }}
+                                                    onClick={() => navigate(`/class/${tClasses.id}`)}
+                                                >
+                                                    {tClasses.name}
+                                                </span>
+                                            <Badge bg='success' className='no-select px-2 py-1'>Dictando</Badge>
                                         </div>
 
                                         <Card.Text className='text-muted small mt-2 flex-grow-1'>
                                             <strong>Día:</strong> {tClasses.day} <br />
                                             <strong>Hora:</strong> {tClasses.hour} hs
                                         </Card.Text>
-
-                                        <div className="mt-3 pt-2 border-top">
-                                            <Button 
-                                                variant="outline-danger" 
-                                                size="sm" 
-                                                className="w-100 fw-bold"
-                                                onClick={() => handleOpenLeaveClass({Class: tClasses})}
-                                            >
-                                                Dar de baja
-                                            </Button>
-                                        </div>
                                     </Card.Body>
                                 </Card>
                             </SwiperSlide>
@@ -544,10 +538,14 @@ const Profile = () => {
                                 <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
                                     <Card.Body className='d-flex flex-column p-4'>
                                         <div className='d-flex justify-content-between align-items-start mb-2'>
-                                            <Card.Title className='fw-bold mb-0 text-dark' style={{ fontSize: '1.15rem' }}>
+                                            <span
+                                            className='fw-bold mb-0 text-dark'
+                                                style={{ cursor:'pointer', fontSize: '1.15rem' }}
+                                                onClick={() => navigate(`/class/${enrollment.Class?.id}`)}
+                                            >
                                                 {enrollment.Class?.name}
-                                            </Card.Title>
-                                            <Badge bg='success' className='px-2 py-1'>Inscripto</Badge>
+                                            </span>
+                                            <Badge bg='success' className='no-select px-2 py-1'>Inscripto</Badge>
                                         </div>
 
                                         <Card.Text className='text-muted small mt-2 flex-grow-1'>

@@ -91,3 +91,24 @@
 .user-info{
     width: 250px;
 }
+
+.class-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.class-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.class-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+}
+
+.no-select {
+    user-select: none;
+}

@@ -55,3 +55,20 @@ export const leaveClassApi = async (userId = null, classId) => {
 
     return await response.json()
 }
+
+export const getClassUsersApi = async (classId) => {
+    const token = localStorage.getItem('token')
+
+    const response = await fetch(`http://localhost:3000/profile/classes/${classId}/users`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+
+    if(!response.ok) {
+        throw new Error ('Error getting class users')
+    }
+
+    return await response.json()
+}

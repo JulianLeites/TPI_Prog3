@@ -4,13 +4,16 @@ import {
     assignUserToClass,
     removeUserFromClass,
     getUserEnrolledClasses,
-    adminRemoveUserFromClass
+    adminRemoveUserFromClass,
+    getUsersAssignedToClass
 } from '../controllers/userClassController.js';
 
 const router = Router();
 
 router.get('/classes', verifyToken, getUserEnrolledClasses)
 router.get('/classes/user/:id', verifyToken, getUserEnrolledClasses)
+
+router.get('/classes/:class_id/users', verifyToken, getUsersAssignedToClass)
 
 router.post('/classes/assign/:class_id', verifyToken, assignUserToClass);
 
