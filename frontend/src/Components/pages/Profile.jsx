@@ -472,7 +472,7 @@ const Profile = () => {
                     >
                         {teacherData?.map((tClasses) => (
                             <SwiperSlide key={tClasses.id}>
-                                <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
+                                <Card className='h-100 shadow-sm class-card bg-light m-2'>
                                     <Card.Body className='d-flex flex-column p-4'>
                                         <div className='d-flex justify-content-between align-items-start mb-2'>
                                                 <span
@@ -535,7 +535,7 @@ const Profile = () => {
                     >
                         {classesData?.map((enrollment) => (
                             <SwiperSlide key={enrollment.id}>
-                                <Card className='h-100 shadow-sm border-0 border-top border-primary border-3 bg-light'>
+                                <Card className='h-100 shadow-sm class-card bg-light m-2'>
                                     <Card.Body className='d-flex flex-column p-4'>
                                         <div className='d-flex justify-content-between align-items-start mb-2'>
                                             <span

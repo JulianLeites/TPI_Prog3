@@ -5,18 +5,21 @@ import NavBar from '../UI/NavBar';
 import ModalClase from '../UI/ModalClase';
 import Footer from '../UI/Footer';
 import ModalDelete from '../UI/ModalDelete';
+import ModalCancel from '../UI/ModalCancel';
 import { useAuth } from '../../context/AuthContext';
+import { useEnrollment } from '../../context/EnrollmentContext';
 import notification from '../../utils/toast';
 
 import { getClassesApi, createClassApi, updateClassApi, deleteClassApi } from '../../services/classService';
 import { getUsersApi } from '../../services/userService';
-import { assignUserToClassApi } from '../../services/userClassService';
+import { assignUserToClassApi, leaveClassApi } from '../../services/userClassService';
 
 import { IoOptions } from "react-icons/io5";
 import { useNavigate } from 'react-router-dom';
 
 const Clases = () => {
     const { user } = useAuth()
+    const { enrollments, fetchEnrollments} = useEnrollment()
 
     const initialStateClass = {
         name: "",
@@ -38,6 +41,8 @@ const Clases = () => {
     // Estados para el Modal de Confirmación de Borrado (Baja)
     const [showFormModal, setShowFormModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false)
+    const [message, setMessage] = useState(null)
 
     const [selectedClass, setSelectedClass] = useState(null);
     const [selectedDay, setSelectedDay] = useState([])
@@ -145,7 +150,9 @@ const Clases = () => {
                 throw new Error('Invalid class selected')
             }
             
-            const resData = await assignUserToClassApi(clase.id)
+            await assignUserToClassApi(clase.id)
+
+            await fetchEnrollments();
             
             notification.success('Inscripcion Completada')
 
@@ -157,6 +164,36 @@ const Clases = () => {
         }
 
         await new Promise((resolve) => setTimeout(resolve, 1000))
+    }
+
+    const handleLeaveClass = async () => {
+        if(!selectedClass) return;
+        
+        try {
+            await leaveClassApi(null, selectedClass.id)
+
+            await fetchEnrollments()
+
+            notification.success('Baja de la clase con procesada exito')
+
+            setClasses(prevClases =>
+                prevClases.map(c => c.id === selectedClass.id ? {...c, capacity: c.capacity+1} : c)
+            )
+        } catch(error) {
+            console.error('Failure leaving class', error)
+            notification.error('No se pudo dar de baja de la clase, intente de nuevo')
+        } finally {
+            setShowCancelModal(false)
+            setSelectedClass(false)
+            setMessage(null)
+
+        }
+    }
+
+    const handleOpenLeaveClass = (clase) => {
+        setSelectedClass(clase)
+        setMessage('Clase')
+        setShowCancelModal(true)
     }
 
     const handleDayFilter = (day) => {
@@ -193,6 +230,12 @@ const Clases = () => {
         const matchesSearch = searchingClass.trim() === '' || clase.name.toLowerCase().includes(searchingClass.toLocaleLowerCase())
         return matchesDay && matchesTeacher && matchesSearch
     });
+
+    const isEnrolled = (classId) => {
+        return enrollments.some(
+            enrollment => enrollment.Class?.id === classId
+        )
+    }
 
     if (loading) {
         return(
@@ -403,14 +446,25 @@ const Clases = () => {
                                                     </Button>
                                                 </div>
                                             )}
-                                            <Button 
-                                                variant="success"
-                                                className="w-100"
-                                                disabled={clase.capacity === 0}
-                                                onClick={() => handleInscription(clase)}
-                                            >
-                                                Inscribirme
-                                            </Button>
+
+                                            {isEnrolled(clase.id) ? (
+                                                <Button
+                                                    variant='danger'
+                                                    className="w-100"
+                                                    onClick={() => handleOpenLeaveClass(clase)}
+                                                >
+                                                    Abandonar
+                                                </Button>
+                                            ) : (
+                                                <Button 
+                                                    variant="success"
+                                                    className="w-100"
+                                                    disabled={user.id === clase.teacher_id || clase.capacity === 0}
+                                                    onClick={() => handleInscription(clase)}
+                                                >
+                                                    Inscribirme
+                                                </Button>
+                                            )}
                                         </div>
                                     </Card.Body>
                                 </Card>
@@ -439,6 +493,14 @@ const Clases = () => {
                 onConfirmDelete={handleConfirmDelete}
                 message='Clase'
             />
+
+            <ModalCancel
+                show={showCancelModal}
+                onHide={() => setShowCancelModal(false)}
+                onConfirmCancelClass={handleLeaveClass}
+                message={message}
+            />
+
             <Footer />
         </>
     );

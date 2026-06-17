@@ -6,13 +6,16 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx';
+import { EnrollmentProvider } from './context/EnrollmentContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+        <EnrollmentProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </EnrollmentProvider>
     </AuthProvider>
   </React.StrictMode>
 );

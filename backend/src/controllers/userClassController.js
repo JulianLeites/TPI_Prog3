@@ -15,6 +15,11 @@ export const assignUserToClass = async (req, res) => {
         if (!user || !gymClass) {
             return res.status(404).json({ message: 'User or Class not found' });
         }
+
+        if(gymClass.teacher_id === userId) {
+            return res.status(400).json({ message: 'A teacher cannot enroll in their own class'})
+        }
+
         const userClass = await User_Class.findOne({ where: { user_id: userId, class_id: classId } });
         if (userClass) {
             return res.status(400).json({ message: 'User is already assigned to this class' });
@@ -73,7 +78,7 @@ export const removeUserFromClass = async (req, res) => {
 };
 
 export const adminRemoveUserFromClass = async (req, res) => {
-    if (req.user.rol !== 'admin' && req.user.rol !== 'superAdmin') {
+    if (req.user.rol === 'user') {
         return res.status(403).json({ message: 'Access denied. Admins only.' });
     }
     const { class_id, userId } = req.params

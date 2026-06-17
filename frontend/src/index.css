@@ -112,3 +112,8 @@
 .no-select {
     user-select: none;
 }
+
+.class-card {
+    border: 1px solid #dee2e6;
+    border-top: 3px solid var(--bs-primary);
+}
