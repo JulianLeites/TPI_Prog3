@@ -13,6 +13,7 @@ import { getUsersApi } from '../../services/userService';
 import { assignUserToClassApi } from '../../services/userClassService';
 
 import { IoOptions } from "react-icons/io5";
+import { useNavigate } from 'react-router-dom';
 
 const Clases = () => {
     const { user } = useAuth()
@@ -29,7 +30,8 @@ const Clases = () => {
     const [classes, setClasses] = useState([]);
     const [loading, setLoading] = useState(true)
     const [teachers, setTeachers] = useState([]);
-    
+
+    const navigate = useNavigate()
     
     const [classEdit, setClassEdit] = useState(initialStateClass);
     
@@ -357,14 +359,22 @@ const Clases = () => {
                         
                     </div>
 
+                    {/* Grilla Clases */}
                     <Row>
                         {filteredClasses.map((clase) => (
                             <Col key={clase.id} xs={12} md={6} lg={4} className="mb-4">
-                                <Card className="h-100 shadow-sm border-0">
+                                <Card className="class-card h-100 shadow-sm border-0">
                                     <Card.Body className="d-flex flex-column bg-light border rounded">
                                         <div className="d-flex justify-content-between align-items-start mb-3">
-                                            <Card.Title className="fw-bold">{clase.name}</Card.Title>
-                                            <Badge bg={clase.capacity > 0 ? "success" : "danger"}>
+                                            <Card.Title className="fw-bold">
+                                                <span
+                                                    style={{ cursor:'pointer'}}
+                                                    onClick={() => navigate(`/class/${clase.id}`)}
+                                                >
+                                                    {clase.name}
+                                                </span>
+                                            </Card.Title>
+                                            <Badge className='no-select' bg={clase.capacity > 0 ? "success" : "danger"}>
                                                 {clase.capacity > 0 ? `${clase.capacity} cupos` : "Agotado"}
                                             </Badge>
                                         </div>

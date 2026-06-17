@@ -6,6 +6,7 @@ import Membership from "./Components/pages/Membership.jsx"
 import Profile from "./components/pages/Profile.jsx"
 import Contacto from "./components/pages/Contacto.jsx"
 import UserManagement from "./Components/pages/UserManagement.jsx"
+import ClassDetails from "./Components/pages/ClassDetails.jsx"
 
 import { useState } from "react"
 import { ToastContainer } from 'react-toastify';
@@ -21,6 +22,7 @@ function App() {
 
         <Route element={<ProtectedRoutes/>}>
           <Route path="/clases" element={<Clases/>} />
+          <Route path="/class/:id" element={<ClassDetails/>}/>
           <Route path="/memberships" element={<Membership/>} />
           <Route path="/profile" element={<Profile/>} />
           <Route path="/profile/:id" element={<Profile/>}/> 

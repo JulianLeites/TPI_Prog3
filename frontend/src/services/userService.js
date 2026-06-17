@@ -137,3 +137,21 @@ export const loginApi = async (credentials) => {
 
     return await response.json()
 }
+
+export const getUserByIdApi = async (userId) => {
+    const token = localStorage.getItem('token')
+
+    const response = await fetch(`http://localhost:3000/profile/users/${userId}`, {
+        method: 'GET',
+        headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+        }
+    })
+
+    if(!response.ok) {
+        throw new Error('Error getting user')
+    }
+
+    return await response.json()
+}

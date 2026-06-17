@@ -80,3 +80,21 @@ export const getTeacherClassApi = async (teacherId) => {
 
     return await response.json()
 } 
+
+export const getClassByIdApi = async (classId) => {
+    const token = localStorage.getItem('token');
+
+    const response = await fetch(`http://localhost:3000/classes/${classId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error('Error getting class');
+    }
+
+    return await response.json();
+}

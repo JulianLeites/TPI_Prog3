@@ -137,3 +137,25 @@ export const getUserEnrolledClasses = async (req, res) => {
         res.status(500).json({ error: 'Failed to retreive enrolled classes'})
     }
 }
+
+export const getUsersAssignedToClass = async (req, res) => {
+    const { class_id } = req.params
+
+    try {
+        const clase = await Class.findByPk(class_id, {
+            include: [{
+                model: User,
+                attributes: ['id', 'username', 'name', 'rol']
+            }]
+        })
+
+        if (!clase) {
+            return res.status(404).json({ error: 'Class not found'})
+        }
+
+        res.json(clase.Users)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ error: 'Failed to get class users'})
+    }
+}
