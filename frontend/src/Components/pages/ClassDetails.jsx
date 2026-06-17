@@ -2,6 +2,7 @@ import React from 'react'
 import NavBar from '../UI/NavBar';
 import Footer from '../UI/Footer';
 import { useAuth } from '../../context/AuthContext';
+import { useEnrollment } from '../../context/EnrollmentContext';
 
 import { Row, Col, Card, Spinner, Button, Container, ListGroup } from 'react-bootstrap'; 
 import { useParams } from 'react-router-dom';
@@ -23,6 +24,7 @@ import { FaRegUserCircle } from "react-icons/fa";
 const ClassDetails = () => {
     const { id } = useParams()
     const { user } = useAuth()
+    const { enrollments, fetchEnrollments } = useEnrollment()
 
     const initialStateClass = {
         name: "",
@@ -39,6 +41,7 @@ const ClassDetails = () => {
     const [teachersData, setTeachersData] = useState(null)
     const [teachers, setTeachers] = useState([])
     const [students, setStudents] = useState([])
+    const [selectedStudent, setSelectedStudent] = useState(null)
 
     const [classEdit, setClassEdit] = useState(initialStateClass);
 
@@ -94,7 +97,9 @@ const ClassDetails = () => {
                 throw new Error('Invalid class selected')
             }
             
-            const resData = await assignUserToClassApi(clase.id)
+            await assignUserToClassApi(clase.id)
+
+            await fetchEnrollments()
             
             notification.success('Inscripcion Completada')
 
@@ -128,21 +133,43 @@ const ClassDetails = () => {
         if(!classData) return;
         
         try {
-            const classId = classData.id
+            await leaveClassApi(null, classData.id)
 
-            await leaveClassApi(null, classId)
+            await fetchEnrollments()
 
-            // navigate('/', {replace: true, state: {}})
+            setStudents(await getClassUsersApi(classData.id));
+
+            navigate('/', {replace: true, state: {}})
 
             setTimeout (() => {
                 notification.success('Baja de la clase con procesada exito')
             }, 1)
         } catch(error) {
-            console.error('Failure leaving class', error)
+            console.error(error)
             notification.error('No se pudo dar de baja de la clase, intente de nuevo')
+        } finally {
+            setShowCancelModal(false);
+            setMessage(null)
         }
-        setShowCancelModal(false);
-        setMessage(null)
+    }
+
+    const handleExpel = async () => {
+        if(!selectedStudent || !classData) return;
+        
+        try {
+            await leaveClassApi(selectedStudent.id, classData.id)
+
+            setStudents(prev => prev.filter(s => s.id !== selectedStudent.id))
+
+            notification.success('Baja de la clase con procesada exito')
+        } catch(error) {
+            console.error(error)
+            notification.error('No se pudo dar expulsar al alumno de la clase, intente de nuevo')
+        } finally {
+            setSelectedStudent(null)
+            setShowCancelModal(false);
+            setMessage(null)
+        }
     }
 
     const handleOpenForm = (clase) => {
@@ -158,6 +185,16 @@ const ClassDetails = () => {
         setMessage('Clase')
         setShowCancelModal(true)
     }
+
+    const handleOpenExpel = (student) => {
+        setSelectedStudent(student)
+        setMessage('Clase')
+        setShowCancelModal(true)
+    }
+
+    const isEnrolled = enrollments.some(
+        enrollment => enrollment.Class?.id === classData?.id
+    )
 
   if (loading) {
     return(
@@ -195,12 +232,24 @@ const ClassDetails = () => {
                                         Editar
                                     </Button>
                                 )}
-                                <Button
-                                    variant='success'
-                                    onClick={() => handleInscription(classData)}
-                                >
-                                    Insribirse
-                                </Button>
+
+                                {teachersData.id !== user.id && (
+                                    isEnrolled ? (
+                                        <Button
+                                            variant='danger'
+                                            onClick={handleOpenLeaveClass}
+                                        >
+                                            Abandonar
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            variant='success'
+                                            onClick={() => handleInscription(classData)}
+                                        >
+                                            Insribirse
+                                        </Button>
+                                    )
+                                )}
                             </div>
                         </Card.Body>
                     </Card>
@@ -270,7 +319,7 @@ const ClassDetails = () => {
                                                         <Button
                                                         variant='outline-danger'
                                                         size='sm'
-                                                        onClick={() => handleOpenLeaveClass(classData)}
+                                                        onClick={() => handleOpenExpel(s)}
                                                         >
                                                             Expulsar
                                                         </Button>
@@ -305,8 +354,7 @@ const ClassDetails = () => {
         <ModalCancel
             show={showCancelModal}
             onHide={() => setShowCancelModal(false)}
-            // onConfirmCancelMembership={handleCancelMembership}
-            onConfirmCancelClass={handleLeaveClass}
+            onConfirmCancelClass={selectedStudent ? handleExpel : handleLeaveClass}
             message={message}
         />
     </div>
