@@ -26,6 +26,8 @@ const registerSchema = z
 const Login = ({show, onHide}) => {
   const [isLoginMode, setIsLoginMode] = useState(true)
 
+  const [loginError, setLoginError] = useState('')
+
   const { login } = useAuth()
 
   const {
@@ -49,10 +51,13 @@ const Login = ({show, onHide}) => {
   useEffect(() => {
     resetLogin()
     resetRegister()
+    setLoginError('')
   }, [show, isLoginMode, resetLogin, resetRegister])
 
   const onLoginSubmit = async (data) => {
     try {
+      setLoginError('')
+
       const resData = await loginApi(data)
 
       const tokenParts = resData.token.split('.')
@@ -65,6 +70,7 @@ const Login = ({show, onHide}) => {
       notification.success('Has iniciado sesion')
     } catch (error) {
       console.error('Error Login: ', error)
+      setLoginError('Usuario o contraseña incorrectos')
     }
   } 
 
@@ -103,6 +109,11 @@ const Login = ({show, onHide}) => {
         </Modal.Header>
 
         <Modal.Body>
+          {loginError && (
+              <div className='alert alert-danger mb-3'>
+                {loginError}
+              </div>
+            )}
           {isLoginMode ? (
             <form id='login' onSubmit={handleSubmitLogin(onLoginSubmit)}>
               <Row>
@@ -113,6 +124,7 @@ const Login = ({show, onHide}) => {
                     className='form-control mb-2'
                     type='text'
                     placeholder='Username'
+                    onChange={() => setLoginError('')}
                     />
                   {errorsLogin.username && (
                     <p className='text-danger'>{errorsLogin.username.message}</p>
@@ -127,6 +139,7 @@ const Login = ({show, onHide}) => {
                       className='form-control mb-2'
                       type='password'
                       placeholder='Contraseña'
+                      onChange={() => setLoginError('')}
                       />
                   {errorsLogin.password && (
                     <p className='text-danger'>{errorsLogin.password.message}</p>
