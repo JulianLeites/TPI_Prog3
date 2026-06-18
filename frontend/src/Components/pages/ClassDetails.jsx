@@ -20,6 +20,8 @@ import { FaRegCalendarDays } from "react-icons/fa6";
 import { FaRegClock } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import { FaRegUserCircle } from "react-icons/fa";
+import { IoInformationCircleOutline } from "react-icons/io5";
+import { FaLocationDot } from "react-icons/fa6";
 
 const ClassDetails = () => {
     const { id } = useParams()
@@ -85,7 +87,7 @@ const ClassDetails = () => {
     fetchClass()
   }, [id])
 
-    const hasPermits = user?.rol !== 'user'
+    const hasPermits = user?.rol === 'admin' || user?.rol === 'superAdmin' || (user?.rol === 'teacher' && user?.id === classData?.teacher_id)
 
     const handleInscription = async (clase) => {
         try {
@@ -276,9 +278,9 @@ const ClassDetails = () => {
             </Row>
 
             {/* Usuarios Inscriptos */}
-            {hasPermits && (
-                <Row className='d-flex justify-content-center'>
-                    <Col>
+            <Row className='d-flex'>
+                {hasPermits && (
+                    <Col md={9}>
                         <Card className='mt-3'>
                             <Card.Header className='d-flex align-items-center gap-2'>
                                 <h5 className='m-0'>Inscriptos</h5>
@@ -295,25 +297,32 @@ const ClassDetails = () => {
                                         )}
                                     </div>
                                 )}
-                                <ListGroup>
+                                <ListGroup className='overflow-auto' style={{ maxHeight: '140px'}}>
                                     {students.length > 0 ? (
                                         students.map(s => (
                                             <ListGroup.Item key={s.id} className='py-2 bg-light'>
                                                 <div className='d-flex align-items-center justify-content-between'>
                                                     <div className='d-flex align-items-center flex-grow-1'>
-                                                        <div style={{ width: '250px' }}>
-                                                            {s.name}
-                                                        </div>
 
-                                                        <div style={{ width: '180px' }}>
-                                                            {s.username}
-                                                        </div>
+                                                        <span
+                                                            className='d-flex'
+                                                            style={{ cursor:'pointer'}}
+                                                            onClick={() => navigate(`/profile/${s.id}`)}
+                                                        >
+                                                            <div style={{ width: '250px' }}>
+                                                                {s.name}
+                                                            </div>
 
-                                                        {hasPermits && (
-                                                            <div style={{ width: '80px' }}>
-                                                                {s.id}
-                                                            </div>    
-                                                        )}
+                                                            <div style={{ width: '180px' }}>
+                                                                {s.username}
+                                                            </div>
+
+                                                            {hasPermits && (
+                                                                <div style={{ width: '80px' }}>
+                                                                    {s.id}
+                                                                </div>    
+                                                            )}
+                                                        </span>
                                                     </div>
                                                     {hasPermits && (
                                                         <Button
@@ -334,8 +343,56 @@ const ClassDetails = () => {
                             </Card.Body>
                         </Card>
                     </Col>
-                </Row>
-            )}
+                )}
+                {/* recomendaciones clase */}
+
+                <Col md={3} className='ms-auto'>
+                    <Card className='mt-3'>
+                        <Card.Header 
+                            className='d-flex justify-content-center align-items-center p-2 border-bottom bg-light rounded-top'
+                        >
+                            <h5 className='m-0'>Informacion Importante</h5>
+                        </Card.Header>
+                        <Card.Body className='p-0'>
+                            <div>
+                                <a 
+                                    href="https://maps.app.goo.gl/bk37oxiHEQq3yVLH9"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-decoration-none text-reset d-flex align-items-center justify-content-between border-bottom p-2"
+                                >
+                                    <span className='d-flex align-items-center gap-1'>
+                                        <FaLocationDot />
+                                        <p className='m-0'>Ubicacion: </p>
+                                    </span>
+                                    <p className='m-0 text-muted'>Zeballos 1341</p> 
+                                </a>
+                                <span className='d-flex justify-content-between align-items-center p-2 border-bottom'>
+                                    <span className='d-flex align-items-center gap-1'>
+                                        <FaRegClock />
+                                        <p className='m-0'>Duracion: </p>
+                                    </span>
+                                    <p className='text-muted m-0'>60 minutos</p>
+                                </span>
+                            </div>
+
+                            <Card className='m-2' style={{ backgroundColor: '#E4F0FF', borderColor: '#a6bcd3' }}>
+                                <Card.Title className='d-flex justify-content-center align-items-center m-0 pt-1'>
+                                    <IoInformationCircleOutline  className='text-primary' />
+                                    <p className='m-0' style={{ fontSize: '0.90rem'}}>Recomendaciones</p>
+                                </Card.Title>
+                                <Card.Body className='p-2'>
+                                    <ul className='mb-0'>
+                                        <li>Llevar botella de agua</li>
+                                        <li>Usar ropa cómoda</li>
+                                        <li>Llegar 10 minutos antes</li>
+                                    </ul>
+                                </Card.Body>
+                            </Card>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
         </Container>
         <Footer/>
 

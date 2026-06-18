@@ -137,9 +137,15 @@ const UserManagement = () => {
         return (
             <ListGroup.Item className='user-list-item bg-light d-flex flex-row justify-content-around align-items-center'>
                 <Row className="w-100">
-                    <Col className='user-info'><p className='mb-0 text-center'>{user.name}</p></Col>
-                    <Col className='user-info'><p className='mb-0 text-center'>{user.username}</p></Col>
-                    <Col className='user-info'><p className='mb-0 text-center'>{user.id}</p></Col>
+                    <span
+                        className='d-flex'
+                        style={{ cursor:'pointer'}}
+                        onClick={() => navigate(`/profile/${user.id}`)}
+                    >
+                        <Col className='user-info'><p className='mb-0 text-center'>{user.name}</p></Col>
+                        <Col className='user-info'><p className='mb-0 text-center'>{user.username}</p></Col>
+                        <Col className='user-info'><p className='mb-0 text-center'>{user.id}</p></Col>
+                    </span>
                 </Row>
                 
                 <Dropdown drop="end" style={{ display: 'inline-block' }}>
