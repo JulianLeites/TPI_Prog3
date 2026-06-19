@@ -166,36 +166,36 @@ function Membership() {
           )}
         </div>
         <div className="d-flex justify-content-center align-items-center gap-3">
-          {memberships.map((memberships) => (
+          {[...memberships].sort((a, b) => a.price - b.price).map((membership) => (
             <Card
               className="text-center bg-light border rounded"
               style={{
                 width: "18rem",
               }}
-              key={memberships.id}
+              key={membership.id}
             >
 
-              <Card.Img variant="top" src={memberships.imageUrl || DefaultImage} style={{maxHeight: "38vh", objectFit:'cover'}} />
+              <Card.Img variant="top" src={membership.imageUrl || DefaultImage} style={{maxHeight: "38vh", objectFit:'cover'}} />
               <Card.Body>
-                <Card.Title className="mb-2">{memberships.name}</Card.Title>
-                <Card.Text><strong>${memberships.price}</strong></Card.Text>
-                <Card.Text> Este plan te permite inscribirte hasta <strong> {memberships.max_classes} </strong> clases</Card.Text>
+                <Card.Title className="mb-2">{membership.name}</Card.Title>
+                <Card.Text><strong>${membership.price}</strong></Card.Text>
+                <Card.Text> Este plan te permite inscribirte hasta <strong> {membership.max_classes} </strong> clases</Card.Text>
                 <Card.Text><strong>Acceso al gimnasio</strong></Card.Text>
-                <Button variant="primary" onClick={() => handleSuscript(memberships)}>
+                <Button variant="primary" onClick={() => handleSuscript(membership)}>
                   Suscribirse
                 </Button> <br/>
                 {(user?.rol === 'admin' || user?.rol === 'superAdmin') && (
                   <div className="mt-2 d-flex justify-content-center align-items-center gap-2">
                     <Button
                       variant="danger"
-                      onClick={() => handleOpenDelete(memberships.id)}
+                      onClick={() => handleOpenDelete(membership.id)}
                     >
                       Borrar
                     </Button>
 
                     <Button 
                       variant='success'
-                      onClick={() => handleOpenForm(memberships)}
+                      onClick={() => handleOpenForm(membership)}
                     >
                       Editar  
                     </Button>
