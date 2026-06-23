@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import notification from '../../utils/toast';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
+import { useEnrollment } from '../../context/EnrollmentContext.jsx';
 
 import { updateUserRolApi, editUserProfileApi, deleteUserApi, getProfileApi, getUsersApi} from '../../services/userService.js'
 import { getTeacherClassApi } from '../../services/classService.js';
@@ -27,6 +28,8 @@ import 'swiper/css/pagination';
 const Profile = () => {
     const { id } = useParams()
     const navigate = useNavigate()
+
+    const { fetchEnrollments} = useEnrollment()
 
     // Estados de datos 
     const [profileData, setProfileData] = useState(null)
@@ -150,6 +153,10 @@ const Profile = () => {
             const classId = selectedClass.Class.id
 
             await leaveClassApi(isViewingOther ? id : null, classId)
+
+            if(!isViewingOther) {
+                await fetchEnrollments()
+            }
 
             setClassesData(classesData.filter(c => c.id !== selectedClass.id));
 
@@ -322,47 +329,49 @@ const Profile = () => {
                                     <p className="mb-0"><strong>Rol asignado:</strong> <br /><span className="badge bg-danger text-white mt-1 px-3 py-2">{profileData?.rol}</span></p>
                                 </div>
                                 
-                                <Dropdown drop='bottom'>
-                                    <Dropdown.Toggle
-                                        as={Button}
-                                        variant='outline-danger'
-                                        className='drop-down-no-caret w-100 fw-bold mt-2 text-wrap small'
-                                    >
-                                        Editar Rol
-                                    </Dropdown.Toggle>
+                                {currentUser.rol === 'superAdmin' && (
+                                    <Dropdown drop='bottom'>
+                                        <Dropdown.Toggle
+                                            as={Button}
+                                            variant='outline-danger'
+                                            className='drop-down-no-caret w-100 fw-bold mt-2 text-wrap small'
+                                        >
+                                            Editar Rol
+                                        </Dropdown.Toggle>
 
-                                    <Dropdown.Menu>
-                                        {profileData?.rol === 'user' && (
-                                            <>
-                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'admin')}>Ascender a Admin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'teacher')}>Ascender a Teacher</Dropdown.Item>
-                                            </>
-                                        )}
+                                        <Dropdown.Menu>
+                                            {profileData?.rol === 'user' && (
+                                                <>
+                                                    <Dropdown.Item onClick={() => updateUserRol(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => updateUserRol(profileData, 'admin')}>Ascender a Admin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => updateUserRol(profileData, 'teacher')}>Ascender a Teacher</Dropdown.Item>
+                                                </>
+                                            )}
 
-                                        {profileData?.rol === 'teacher' && (
-                                            <>
-                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'admin')}>Ascender a Admin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'user')}>Degradar a User</Dropdown.Item>
-                                            </>
-                                        )}
+                                            {profileData?.rol === 'teacher' && (
+                                                <>
+                                                    <Dropdown.Item onClick={() => updateUserRol(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => updateUserRol(profileData, 'admin')}>Ascender a Admin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => updateUserRol(profileData, 'user')}>Degradar a User</Dropdown.Item>
+                                                </>
+                                            )}
 
-                                        {profileData?.rol === 'admin' && (
-                                            <>
-                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'teacher')}>Degradar a Teacher</Dropdown.Item>
-                                                <Dropdown.Item onClick={() => updateUserRol(profileData, 'user')}>Degradar a User</Dropdown.Item>
-                                            </>
-                                        )}
+                                            {profileData?.rol === 'admin' && (
+                                                <>
+                                                    <Dropdown.Item onClick={() => updateUserRol(profileData, 'superAdmin')}>Ascender a SuperAdmin</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => updateUserRol(profileData, 'teacher')}>Degradar a Teacher</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => updateUserRol(profileData, 'user')}>Degradar a User</Dropdown.Item>
+                                                </>
+                                            )}
 
-                                        {profileData?.rol === 'superAdmin' && (
-                                            <Dropdown.Item disabled>
-                                                Acceda a gestion de usuarios
-                                            </Dropdown.Item>
-                                        )}
-                                    </Dropdown.Menu>
-                                </Dropdown>
+                                            {profileData?.rol === 'superAdmin' && (
+                                                <Dropdown.Item disabled>
+                                                    Acceda a gestion de usuarios
+                                                </Dropdown.Item>
+                                            )}
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+                                )}
                             </Card.Body>
                         </Card>
                     </Col>

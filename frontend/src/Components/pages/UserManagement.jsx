@@ -149,7 +149,7 @@ const UserManagement = () => {
                 </Row>
                 
                 <Dropdown drop="end" style={{ display: 'inline-block' }}>
-                    <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm">
+                    <Dropdown.Toggle variant="outline-secondary" className='drop-down-toggle-no-caret' size="sm" >
                         <SlOptionsVertical />
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
