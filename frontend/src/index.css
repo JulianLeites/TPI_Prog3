@@ -40,12 +40,12 @@
     align-items: center;
     flex-direction: column;
     justify-content: center;
+    width: 800px;
 }
 
 .user-list-header {
     text-align: center;
-    min-width: 800px;
-    max-width: 600px;
+    width: 800px;
     align-self: center;
 }
 
@@ -54,16 +54,18 @@
     padding: 0;
     display: flex;
     justify-content: center;
+    max-height: 400px;
+    max-width: 800px;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
 }
 
 .user-list-item{
-    min-width: 800px;
+    width: 800px;
     display: flex;;
     justify-content: space-between;
     border-left: none;
     border-right: none;
-    /* border-top-left-radius: 0px !important;
-    border-top-right-radius: 0px !important; */
 }
 
 .user-management-accordion .user-list-item {
