@@ -248,7 +248,7 @@ const ClassDetails = () => {
                                             variant='success'
                                             onClick={() => handleInscription(classData)}
                                         >
-                                            Insribirse
+                                            Inscribirse
                                         </Button>
                                     )
                                 )}
