@@ -54,10 +54,7 @@
     padding: 0;
     display: flex;
     justify-content: center;
-    max-height: 400px;
     max-width: 800px;
-    overflow-y: auto;
-    scrollbar-gutter: stable;
 }
 
 .user-list-item{
