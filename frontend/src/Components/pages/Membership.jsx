@@ -175,7 +175,7 @@ function Membership() {
               key={membership.id}
             >
 
-              <Card.Img variant="top" src={membership.imageUrl || DefaultImage} style={{maxHeight: "38vh", objectFit:'cover'}} />
+              <Card.Img variant="top" src={membership.imageUrl || DefaultImage} style={{height: "38vh", objectFit:'cover'}} />
               <Card.Body>
                 <Card.Title className="mb-2">{membership.name}</Card.Title>
                 <Card.Text><strong>${membership.price}</strong></Card.Text>
