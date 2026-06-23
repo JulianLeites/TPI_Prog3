@@ -124,7 +124,7 @@ const Login = ({show, onHide}) => {
                     className='form-control mb-2'
                     type='text'
                     placeholder='Username'
-                    onChange={() => setLoginError('')}
+                    onInput={() => setLoginError('')}
                     />
                   {errorsLogin.username && (
                     <p className='text-danger'>{errorsLogin.username.message}</p>
@@ -135,12 +135,12 @@ const Login = ({show, onHide}) => {
                 <Col>
                   <label className='form-label'>Contraseña</label>
                   <input
-                      {...registerLogin("password")}
-                      className='form-control mb-2'
-                      type='password'
-                      placeholder='Contraseña'
-                      onChange={() => setLoginError('')}
-                      />
+                    {...registerLogin("password")}
+                    className='form-control mb-2'
+                    type='password'
+                    placeholder='Contraseña'
+                    onInput={() => setLoginError('')}
+                  />
                   {errorsLogin.password && (
                     <p className='text-danger'>{errorsLogin.password.message}</p>
                   )}
@@ -153,13 +153,13 @@ const Login = ({show, onHide}) => {
                   <Col>
                       <label className='form-label'>Username</label>
                       <input
-                          {...registerRegister("username")}
-                          className='form-control mb-2'
-                          type='text'
-                          placeholder='Username'
-                          />
+                        {...registerRegister("username")}
+                        className='form-control mb-2'
+                        type='text'
+                        placeholder='Username'
+                      />
                       {errorsRegister.username && (
-                          <p className='text-danger'>{errorsRegister.username.message}</p>
+                        <p className='text-danger'>{errorsRegister.username.message}</p>
                       )}
                   </Col>
               </Row>
@@ -167,25 +167,25 @@ const Login = ({show, onHide}) => {
                   <Col>
                       <label className='form-label'>Nombre</label>
                       <input
-                          {...registerRegister("name")}
-                          className='form-control mb-2'
-                          type='text'
-                          placeholder='Nombre'
+                        {...registerRegister("name")}
+                        className='form-control mb-2'
+                        type='text'
+                        placeholder='Nombre'
                       />
                       {errorsRegister.name && (
-                          <p className='text-danger'>{errorsRegister.name.message}</p>
+                        <p className='text-danger'>{errorsRegister.name.message}</p>
                       )}
                   </Col>
                   <Col>
                       <label className='form-label'>Apellido</label>
                       <input
-                          {...registerRegister("surname")}
-                          className='form-control mb-2'
-                          type='text'
-                          placeholder='Apellido'
+                        {...registerRegister("surname")}
+                        className='form-control mb-2'
+                        type='text'
+                        placeholder='Apellido'
                       />
                       {errorsRegister.surname && (
-                          <p className='text-danger'>{errorsRegister.surname.message}</p>
+                        <p className='text-danger'>{errorsRegister.surname.message}</p>
                       )}
                   </Col>
               </Row>
@@ -193,25 +193,25 @@ const Login = ({show, onHide}) => {
                   <Col>
                       <label className='form-label'>Email</label>
                       <input
-                          {...registerRegister("email")}
-                          className='form-control mb-2'
-                          type='text'
-                          placeholder='Email'
+                        {...registerRegister("email")}
+                        className='form-control mb-2'
+                        type='text'
+                        placeholder='Email'
                       />
                       {errorsRegister.email && (
-                          <p className='text-danger'>{errorsRegister.email.message}</p>
+                        <p className='text-danger'>{errorsRegister.email.message}</p>
                       )}
                   </Col>
                   <Col>
                       <label className='form-label'>Contraseña</label>
                       <input
-                          {...registerRegister("password")}
-                          className='form-control mb-2'
-                          type='password'
-                          placeholder='Contraseña'
+                        {...registerRegister("password")}
+                        className='form-control mb-2'
+                        type='password'
+                        placeholder='Contraseña'
                       />
                       {errorsRegister.password && (
-                          <p className='text-danger'>{errorsRegister.password.message}</p>
+                        <p className='text-danger'>{errorsRegister.password.message}</p>
                       )}
                   </Col>
               </Row>
@@ -235,14 +235,14 @@ const Login = ({show, onHide}) => {
 
         <Modal.Footer>
           <Button variant="danger" onClick={onHide}>
-              Cancelar
+            Cancelar
           </Button>
           <Button
-              variant="primary"
-              type="submit"
-              form={isLoginMode ? 'login' : 'register'}
+            variant="primary"
+            type="submit"
+            form={isLoginMode ? 'login' : 'register'}
           >
-              {isLoginMode ? 'Confirmar' : 'Crear Cuenta'}
+            {isLoginMode ? 'Confirmar' : 'Crear Cuenta'}
           </Button>
         </Modal.Footer>
       </Modal>
