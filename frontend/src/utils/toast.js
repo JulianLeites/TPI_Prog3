@@ -3,8 +3,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const defaultOptions = {
     position: 'top-right',
-    autoClouse: '2000',
-    closeOnClick: 'true'
+    autoClose: 2000,
+    closeOnClick: true
 }
 
 const notification = {
